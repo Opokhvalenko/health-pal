@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { AdherencePeriod, DoseEvent } from '@health-pal/adherence-core';
-import { computeAdherence, computeStreak } from '@health-pal/adherence-core';
+import { computeAdherence, computeCalendarData, computeStreak } from '@health-pal/adherence-core';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
+import { AdherenceCalendar } from '../../src/components/AdherenceCalendar';
 import { LoadingView } from '../../src/components/LoadingView';
 import { doseEventService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
@@ -59,6 +60,8 @@ export default function AdherenceScreen(): React.JSX.Element {
   const now = new Date();
   const summary = computeAdherence(events, period, now);
   const streak = computeStreak(events, now);
+  const calendarWeeks = period === '7d' ? 4 : period === '30d' ? 13 : 26;
+  const calendar = computeCalendarData(events, calendarWeeks, now);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,6 +96,9 @@ export default function AdherenceScreen(): React.JSX.Element {
           <Text style={styles.percentValue}>{summary.adherencePercent}%</Text>
           <Text style={styles.percentLabel}>{t('adherence.taken')}</Text>
         </View>
+
+        {/* Calendar Heatmap */}
+        <AdherenceCalendar days={calendar.days} weeks={calendar.weeks} />
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
