@@ -118,9 +118,12 @@ function MedicationCard({
       {schedule && (
         <View style={styles.cardSchedule}>
           <Text style={styles.cardScheduleType}>
-            {t(`medications.scheduleTypes.${schedule.type}`, {
-              hours: schedule.intervalHours ?? '',
-            })}
+            {schedule.type === 'every_x_hours'
+              ? (t('medications.scheduleTypes.every_x_hours') as string).replace(
+                  '{{hours}}',
+                  String(schedule.intervalHours ?? ''),
+                )
+              : t(`medications.scheduleTypes.${schedule.type}`)}
           </Text>
           {schedule.times.length > 0 && (
             <View style={styles.cardTimes}>

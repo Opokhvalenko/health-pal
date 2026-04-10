@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { computeAdherence, computeStreak, computeTodayState } from './adherence';
+import {
+  computeAdherence,
+  computeCalendarData,
+  computeStreak,
+  computeTodayState,
+} from './adherence';
 import type { DoseEvent } from './types';
 
 const now = new Date('2026-04-10T12:00:00');
@@ -162,5 +167,62 @@ describe('computeTodayState', () => {
     const scheduledTimes = [new Date('2026-04-10T09:00:00'), new Date('2026-04-10T14:00:00')];
     const result = computeTodayState([], scheduledTimes, lateNow);
     expect(result.nextDose).toBeNull();
+  });
+});
+
+describe('computeCalendarData', () => {
+  it('returns correct number of days for given weeks', () => {
+    const result = computeCalendarData([], 2, now);
+    expect(result.days.length).toBe(14);
+    expect(result.weeks).toBe(2);
+  });
+
+  it('marks days without events as none', () => {
+    const result = computeCalendarData([], 1, now);
+    for (const day of result.days) {
+      expect(day.status).toBe('none');
+      expect(day.taken).toBe(0);
+      expect(day.total).toBe(0);
+    }
+  });
+
+  it('marks day as full when all doses taken', () => {
+    const events: DoseEvent[] = [
+      makeDoseEvent({ id: '1', scheduledAt: new Date('2026-04-09T09:00:00'), status: 'taken' }),
+      makeDoseEvent({ id: '2', scheduledAt: new Date('2026-04-09T21:00:00'), status: 'taken' }),
+    ];
+    const result = computeCalendarData(events, 1, now);
+    const apr9 = result.days.find((d) => d.date === '2026-04-09');
+    expect(apr9?.status).toBe('full');
+    expect(apr9?.taken).toBe(2);
+    expect(apr9?.total).toBe(2);
+  });
+
+  it('marks day as partial when some doses taken', () => {
+    const events: DoseEvent[] = [
+      makeDoseEvent({ id: '1', scheduledAt: new Date('2026-04-09T09:00:00'), status: 'taken' }),
+      makeDoseEvent({ id: '2', scheduledAt: new Date('2026-04-09T21:00:00'), status: 'missed' }),
+    ];
+    const result = computeCalendarData(events, 1, now);
+    const apr9 = result.days.find((d) => d.date === '2026-04-09');
+    expect(apr9?.status).toBe('partial');
+    expect(apr9?.taken).toBe(1);
+    expect(apr9?.total).toBe(2);
+  });
+
+  it('marks day as missed when no doses taken', () => {
+    const events: DoseEvent[] = [
+      makeDoseEvent({ id: '1', scheduledAt: new Date('2026-04-09T09:00:00'), status: 'missed' }),
+      makeDoseEvent({ id: '2', scheduledAt: new Date('2026-04-09T21:00:00'), status: 'skipped' }),
+    ];
+    const result = computeCalendarData(events, 1, now);
+    const apr9 = result.days.find((d) => d.date === '2026-04-09');
+    expect(apr9?.status).toBe('missed');
+  });
+
+  it('today is the last day in the grid', () => {
+    const result = computeCalendarData([], 1, now);
+    const lastDay = result.days[result.days.length - 1];
+    expect(lastDay?.date).toBe('2026-04-10');
   });
 });

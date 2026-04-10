@@ -1,7 +1,15 @@
-export { computeAdherence, computeStreak, computeTodayState } from './adherence';
+export {
+  computeAdherence,
+  computeCalendarData,
+  computeStreak,
+  computeTodayState,
+} from './adherence';
 export type {
   AdherencePeriod,
   AdherenceSummary,
+  CalendarData,
+  CalendarDay,
+  DayStatus,
   DoseEvent,
   DoseStatus,
   StreakInfo,

@@ -1,4 +1,13 @@
-import type { AdherencePeriod, AdherenceSummary, DoseEvent, StreakInfo, TodayState } from './types';
+import type {
+  AdherencePeriod,
+  AdherenceSummary,
+  CalendarData,
+  CalendarDay,
+  DayStatus,
+  DoseEvent,
+  StreakInfo,
+  TodayState,
+} from './types';
 
 /**
  * Computes adherence summary for a given period.
@@ -105,6 +114,61 @@ export function computeTodayState(
     completedToday,
     nextDose,
   };
+}
+
+/**
+ * Computes calendar grid data for the adherence heatmap.
+ * Returns exactly `weeks * 7` days ending on `now`.
+ */
+export function computeCalendarData(
+  events: readonly DoseEvent[],
+  weeks: number,
+  now: Date = new Date(),
+): CalendarData {
+  const totalDays = weeks * 7;
+  const todayKey = toDateKey(now);
+
+  // Group events by date
+  const byDate = new Map<string, DoseEvent[]>();
+  for (const event of events) {
+    const key = toDateKey(event.scheduledAt);
+    const existing = byDate.get(key) ?? [];
+    existing.push(event);
+    byDate.set(key, existing);
+  }
+
+  const days: CalendarDay[] = [];
+  for (let i = totalDays - 1; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const key = toDateKey(date);
+    const dayEvents = byDate.get(key);
+
+    let status: DayStatus;
+    let taken = 0;
+    let total = 0;
+
+    if (key > todayKey) {
+      status = 'future';
+    } else if (!dayEvents || dayEvents.length === 0) {
+      status = 'none';
+    } else {
+      total = dayEvents.length;
+      taken = dayEvents.filter((e) => e.status === 'taken').length;
+
+      if (taken === total) {
+        status = 'full';
+      } else if (taken > 0) {
+        status = 'partial';
+      } else {
+        status = 'missed';
+      }
+    }
+
+    days.push({ date: key, status, taken, total });
+  }
+
+  return { days, weeks };
 }
 
 function filterByPeriod(

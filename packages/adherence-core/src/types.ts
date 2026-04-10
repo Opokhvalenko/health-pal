@@ -29,3 +29,17 @@ export interface TodayState {
 }
 
 export type AdherencePeriod = '7d' | '30d' | 'all';
+
+export type DayStatus = 'full' | 'partial' | 'missed' | 'none' | 'future';
+
+export interface CalendarDay {
+  readonly date: string;
+  readonly status: DayStatus;
+  readonly taken: number;
+  readonly total: number;
+}
+
+export interface CalendarData {
+  readonly days: readonly CalendarDay[];
+  readonly weeks: number;
+}

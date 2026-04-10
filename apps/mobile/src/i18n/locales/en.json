@@ -37,7 +37,8 @@
     "emptyHint": "Add your first medication to get started",
     "nextDose": "Next dose",
     "recentDoses": "Recent doses",
-    "noDosesToday": "No doses scheduled for today"
+    "noDosesToday": "No doses scheduled for today",
+    "doses": "doses"
   },
   "medications": {
     "title": "Medications",
@@ -104,7 +105,10 @@
     "longestStreak": "Longest streak",
     "days": "{{count}} days",
     "day": "{{count}} day",
-    "summary": "Summary"
+    "summary": "Summary",
+    "calendar": "Activity",
+    "partial": "Partial",
+    "noData": "No data"
   },
   "dose": {
     "take": "Take",

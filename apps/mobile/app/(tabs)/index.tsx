@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +10,7 @@ import { BigButtonView } from '../../src/components/BigButtonView';
 import { CaregiverDashboard } from '../../src/components/CaregiverDashboard';
 import { LoadingView } from '../../src/components/LoadingView';
 import { ProfileSwitcher } from '../../src/components/ProfileSwitcher';
+import { ProgressRing } from '../../src/components/ProgressRing';
 import { doseEventService } from '../../src/db';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
 import { useTodayDoses } from '../../src/hooks/useTodayDoses';
@@ -62,6 +64,10 @@ export default function TodayScreen(): React.JSX.Element {
   ): Promise<void> => {
     if (!activeProfile) return;
 
+    void Haptics.impactAsync(
+      action === 'taken' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
+    );
+
     if (dose.eventId) {
       await doseEventService.updateStatus(dose.eventId, action);
     } else {
@@ -86,9 +92,9 @@ export default function TodayScreen(): React.JSX.Element {
           <ProfileSwitcher />
         </View>
         {totalCount > 0 && (
-          <Text style={styles.progress}>
-            {t('dose.todayProgress', { done: doneCount, total: totalCount })}
-          </Text>
+          <View style={styles.progressRing}>
+            <ProgressRing done={doneCount} total={totalCount} label={t('today.doses')} />
+          </View>
         )}
       </View>
 
@@ -231,11 +237,9 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
   },
-  progress: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.semibold,
-    marginTop: theme.spacing.sm,
+  progressRing: {
+    alignItems: 'center',
+    marginTop: theme.spacing.md,
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
@@ -257,6 +261,11 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.lg,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.sm,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   doseCardDue: {
     borderLeftWidth: 3,
