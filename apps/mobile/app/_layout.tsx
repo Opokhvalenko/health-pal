@@ -55,6 +55,7 @@ export default function RootLayout(): React.JSX.Element | null {
       <Stack screenOptions={{ headerShown: false }}>
         {isOnboardingDone ? <Stack.Screen name="(tabs)" /> : <Stack.Screen name="onboarding" />}
         <Stack.Screen name="profiles" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="medication-form" options={{ presentation: 'modal' }} />
       </Stack>
     </SafeAreaProvider>
   );
