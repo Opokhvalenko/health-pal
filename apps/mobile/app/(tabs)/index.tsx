@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { BigButtonView } from '../../src/components/BigButtonView';
 import { CaregiverDashboard } from '../../src/components/CaregiverDashboard';
+import { LoadingView } from '../../src/components/LoadingView';
 import { ProfileSwitcher } from '../../src/components/ProfileSwitcher';
 import { doseEventService } from '../../src/db';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
@@ -17,13 +18,15 @@ export default function TodayScreen(): React.JSX.Element {
   const activeProfile = useAppStore((s) => s.activeProfile);
   const calmMode = useAppStore((s) => s.calmMode);
   const role = activeProfile?.role;
-  const { doses, reload } = useTodayDoses(activeProfile?.id);
+  const { doses, loading, reload } = useTodayDoses(activeProfile?.id);
 
   useFocusEffect(
     useCallback(() => {
       reload();
     }, [reload]),
   );
+
+  if (loading) return <LoadingView />;
 
   if (role === 'patient') {
     return <BigButtonView />;
@@ -148,7 +151,11 @@ function DoseCard({
   const isDue = dose.scheduledAt <= now;
 
   return (
-    <View style={[styles.doseCard, isDue && !calmMode && styles.doseCardDue]}>
+    <View
+      style={[styles.doseCard, isDue && !calmMode && styles.doseCardDue]}
+      accessible
+      accessibilityLabel={`${dose.medicationName}, ${dose.dosageValue} ${dose.dosageUnit}, ${isDue ? t('dose.dueNow') : dose.timeStr}`}
+    >
       <View style={styles.doseInfo}>
         <Text style={styles.doseName}>{dose.medicationName}</Text>
         <Text style={styles.doseDosage}>
@@ -159,14 +166,29 @@ function DoseCard({
         </Text>
       </View>
       <View style={styles.doseActions}>
-        <Pressable style={styles.takeButton} onPress={() => void onAction(dose, 'taken')}>
+        <Pressable
+          style={styles.takeButton}
+          onPress={() => void onAction(dose, 'taken')}
+          accessibilityRole="button"
+          accessibilityLabel={`${t('dose.take')} ${dose.medicationName}`}
+        >
           <Text style={styles.takeText}>{t('dose.take')}</Text>
         </Pressable>
         <View style={styles.secondaryActions}>
-          <Pressable style={styles.skipButton} onPress={() => void onAction(dose, 'skipped')}>
+          <Pressable
+            style={styles.skipButton}
+            onPress={() => void onAction(dose, 'skipped')}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('dose.skip')} ${dose.medicationName}`}
+          >
             <Text style={styles.skipText}>{t('dose.skip')}</Text>
           </Pressable>
-          <Pressable style={styles.skipButton} onPress={() => void onAction(dose, 'snoozed')}>
+          <Pressable
+            style={styles.skipButton}
+            onPress={() => void onAction(dose, 'snoozed')}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('dose.snooze')} ${dose.medicationName}`}
+          >
             <Text style={styles.skipText}>{t('dose.snooze')}</Text>
           </Pressable>
         </View>

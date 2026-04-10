@@ -31,8 +31,16 @@ export function ProfileSwitcher(): React.JSX.Element {
 
   return (
     <>
-      <Pressable style={styles.trigger} onPress={() => setModalVisible(true)}>
-        <Text style={styles.emoji}>{activeProfile.avatarEmoji}</Text>
+      <Pressable
+        style={styles.trigger}
+        onPress={() => setModalVisible(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('profiles.title')}: ${activeProfile.name}`}
+        accessibilityHint={t('profiles.title')}
+      >
+        <Text style={styles.emoji} importantForAccessibility="no">
+          {activeProfile.avatarEmoji}
+        </Text>
         <Text style={styles.name} numberOfLines={1}>
           {activeProfile.name}
         </Text>

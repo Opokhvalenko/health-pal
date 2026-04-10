@@ -68,6 +68,8 @@ export default function AdherenceScreen(): React.JSX.Element {
               key={p}
               style={[styles.periodTab, period === p && styles.periodTabActive]}
               onPress={() => setPeriod(p)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: period === p }}
             >
               <Text style={[styles.periodText, period === p && styles.periodTextActive]}>
                 {t(`adherence.period${p === '7d' ? '7d' : p === '30d' ? '30d' : 'All'}`)}
@@ -77,7 +79,11 @@ export default function AdherenceScreen(): React.JSX.Element {
         </View>
 
         {/* Big Percentage */}
-        <View style={styles.percentCard}>
+        <View
+          style={styles.percentCard}
+          accessible
+          accessibilityLabel={`${summary.adherencePercent}% ${t('adherence.taken')}`}
+        >
           <Text style={styles.percentValue}>{summary.adherencePercent}%</Text>
           <Text style={styles.percentLabel}>{t('adherence.taken')}</Text>
         </View>
