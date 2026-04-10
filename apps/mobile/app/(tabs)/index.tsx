@@ -17,9 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { BigButtonView } from '../../src/components/BigButtonView';
 import { CaregiverDashboard } from '../../src/components/CaregiverDashboard';
-import { LoadingView } from '../../src/components/LoadingView';
 import { ProfileSwitcher } from '../../src/components/ProfileSwitcher';
 import { ProgressRing } from '../../src/components/ProgressRing';
+import { TodaySkeleton } from '../../src/components/skeletons/TodaySkeleton';
 import { doseEventService, medicationService } from '../../src/db';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
@@ -43,7 +43,7 @@ export default function TodayScreen(): React.JSX.Element {
     }, [reload]),
   );
 
-  if (loading) return <LoadingView />;
+  if (loading) return <TodaySkeleton />;
 
   if (role === 'patient') {
     return <BigButtonView />;

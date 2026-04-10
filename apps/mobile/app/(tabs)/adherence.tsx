@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { AdherenceCalendar } from '../../src/components/AdherenceCalendar';
 import { AnimatedCounter } from '../../src/components/AnimatedCounter';
-import { LoadingView } from '../../src/components/LoadingView';
+import { AdherenceSkeleton } from '../../src/components/skeletons/AdherenceSkeleton';
 import { doseEventService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
 
@@ -42,7 +42,7 @@ export default function AdherenceScreen(): React.JSX.Element {
     }, [loadEvents]),
   );
 
-  if (loading) return <LoadingView />;
+  if (loading) return <AdherenceSkeleton />;
 
   if (events.length === 0) {
     return (

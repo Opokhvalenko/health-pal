@@ -6,7 +6,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInRight, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import { LoadingView } from '../../src/components/LoadingView';
+import { MedicationsSkeleton } from '../../src/components/skeletons/MedicationsSkeleton';
 import type { MedicationWithSchedule } from '../../src/db';
 import { medicationService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
@@ -30,7 +30,7 @@ export default function MedicationsScreen(): React.JSX.Element {
     }, [loadMeds]),
   );
 
-  if (loading) return <LoadingView />;
+  if (loading) return <MedicationsSkeleton />;
 
   const routineMeds = meds.filter((m) => m.medication.category === 'routine');
   const asNeededMeds = meds.filter((m) => m.medication.category === 'as_needed');
