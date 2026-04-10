@@ -177,6 +177,46 @@
     "nothingNow": "Nothing right now",
     "nextAt": "Next at {{time}}"
   },
+  "symptoms": {
+    "title": "Symptoms",
+    "logSymptom": "Log Symptom",
+    "name": "Symptom",
+    "namePlaceholder": "e.g. Headache, Nausea",
+    "severity": "Severity",
+    "note": "Note (optional)",
+    "notePlaceholder": "Any details...",
+    "save": "Save",
+    "recent": "Recent Symptoms",
+    "empty": "No symptoms logged",
+    "emptyHint": "Tap + to log a symptom",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this symptom log?",
+    "severityLabels": {
+      "1": "Minimal",
+      "2": "Very mild",
+      "3": "Mild",
+      "4": "Moderate low",
+      "5": "Moderate",
+      "6": "Moderate high",
+      "7": "Significant",
+      "8": "Severe",
+      "9": "Very severe",
+      "10": "Extreme"
+    }
+  },
+  "report": {
+    "title": "Doctor Report",
+    "generate": "Generate Report",
+    "generating": "Generating...",
+    "share": "Share Report",
+    "description": "Generate a PDF summary of medications, adherence, and symptoms to share with your doctor.",
+    "activeMedications": "Active Medications",
+    "adherenceSummary": "Adherence Summary",
+    "recentSymptoms": "Recent Symptoms",
+    "recentDoses": "Recent Dose History",
+    "generatedOn": "Generated on {{date}}",
+    "patientName": "Patient: {{name}}"
+  },
   "common": {
     "back": "Back",
     "close": "Close",

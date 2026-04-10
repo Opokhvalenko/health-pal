@@ -20,3 +20,5 @@ export type {
 } from './profile.service';
 export { profileService } from './profile.service';
 export * from './schema';
+export type { CreateSymptomInput, SymptomRow } from './symptom.service';
+export { symptomService } from './symptom.service';
