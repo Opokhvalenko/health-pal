@@ -1,24 +1,21 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import type { MedicationCategory, ScheduleType } from '../src/db';
 import { medicationService } from '../src/db';
 import { scheduleAllNotifications } from '../src/services/notification.service';
 import { useAppStore } from '../src/stores';
-
-const DOSAGE_UNITS = ['mg', 'ml', 'tablet', 'capsule', 'drop', 'puff', 'patch', 'injection'];
-const SCHEDULE_TYPES: ScheduleType[] = [
-  'once_daily',
-  'twice_daily',
-  'three_times_daily',
-  'every_x_hours',
-  'custom_times',
-  'as_needed',
-];
+import {
+  DOSAGE_UNITS,
+  type MedicationFormData,
+  medicationSchema,
+  SCHEDULE_TYPES,
+} from '../src/validation/medication.schema';
 
 const DEFAULT_TIMES: Record<string, string[]> = {
   once_daily: ['08:00'],
@@ -33,19 +30,38 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { medId } = useLocalSearchParams<{ medId?: string }>();
   const activeProfile = useAppStore((s) => s.activeProfile);
+  const isEditing = Boolean(medId);
 
-  const [name, setName] = useState('');
-  const [dosageValue, setDosageValue] = useState('');
-  const [dosageUnit, setDosageUnit] = useState('mg');
-  const [category, setCategory] = useState<MedicationCategory>('routine');
-  const [scheduleType, setScheduleType] = useState<ScheduleType>('once_daily');
-  const [times, setTimes] = useState<string[]>(['08:00']);
-  const [intervalHours, setIntervalHours] = useState('8');
-  const [notes, setNotes] = useState('');
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<MedicationFormData>({
+    resolver: zodResolver(medicationSchema),
+    defaultValues: {
+      name: '',
+      dosageValue: undefined,
+      dosageUnit: 'mg',
+      category: 'routine',
+      scheduleType: 'once_daily',
+      times: ['08:00'],
+      intervalHours: 8,
+      notes: '',
+    },
+    mode: 'onChange',
+  });
+
+  const scheduleType = watch('scheduleType');
+  const times = watch('times');
+  const dosageUnit = watch('dosageUnit');
+  const category = watch('category');
+  const intervalHours = watch('intervalHours');
+
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingTimeIndex, setEditingTimeIndex] = useState<number | null>(null);
-
-  const isEditing = Boolean(medId);
 
   const loadMedication = useCallback(async (): Promise<void> => {
     if (!medId || !activeProfile) return;
@@ -53,82 +69,109 @@ export default function MedicationFormScreen(): React.JSX.Element {
     const found = all.find((m) => m.medication.id === medId);
     if (!found) return;
     const { medication, schedule } = found;
-    setName(medication.name);
-    setDosageValue(String(medication.dosageValue));
-    setDosageUnit(medication.dosageUnit);
-    setCategory(medication.category);
-    setNotes(medication.notes ?? '');
-    if (schedule) {
-      setScheduleType(schedule.type);
-      setTimes(schedule.times);
-      if (schedule.intervalHours) setIntervalHours(String(schedule.intervalHours));
-    }
-  }, [medId, activeProfile]);
+    reset({
+      name: medication.name,
+      dosageValue: medication.dosageValue,
+      dosageUnit: medication.dosageUnit as MedicationFormData['dosageUnit'],
+      category: medication.category as MedicationFormData['category'],
+      scheduleType: (schedule?.type as MedicationFormData['scheduleType']) ?? 'once_daily',
+      times: schedule?.times ?? ['08:00'],
+      intervalHours: schedule?.intervalHours ?? 8,
+      notes: medication.notes ?? '',
+    });
+  }, [medId, activeProfile, reset]);
 
   useEffect(() => {
     loadMedication();
   }, [loadMedication]);
 
-  const handleScheduleTypeChange = (type: ScheduleType): void => {
-    setScheduleType(type);
+  const handleScheduleTypeChange = (type: MedicationFormData['scheduleType']): void => {
+    setValue('scheduleType', type, { shouldValidate: true });
     const defaults = DEFAULT_TIMES[type];
-    if (defaults) setTimes(defaults);
+    if (defaults) setValue('times', defaults);
   };
 
+  const [pendingTime, setPendingTime] = useState<Date | null>(null);
+
   const handleTimeChange = (_event: unknown, date?: Date): void => {
-    setShowTimePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+    }
     if (!date) return;
+
+    if (Platform.OS === 'ios') {
+      // On iOS, just store pending value — apply on "Done"
+      setPendingTime(date);
+      return;
+    }
+
+    // Android: apply immediately
+    applyTime(date);
+  };
+
+  const applyTime = (date: Date): void => {
     const hh = String(date.getHours()).padStart(2, '0');
     const mm = String(date.getMinutes()).padStart(2, '0');
     const timeStr = `${hh}:${mm}`;
 
     if (editingTimeIndex !== null) {
-      setTimes((prev) => prev.map((t, i) => (i === editingTimeIndex ? timeStr : t)));
-      setEditingTimeIndex(null);
+      const updated = times.map((t, i) => (i === editingTimeIndex ? timeStr : t));
+      setValue('times', updated);
     } else {
-      setTimes((prev) => [...prev, timeStr].sort());
+      setValue('times', [...times, timeStr].sort());
     }
   };
 
-  const handleRemoveTime = (index: number): void => {
-    setTimes((prev) => prev.filter((_, i) => i !== index));
+  const handleTimePickerDone = (): void => {
+    if (pendingTime) {
+      applyTime(pendingTime);
+    }
+    setPendingTime(null);
+    setEditingTimeIndex(null);
+    setShowTimePicker(false);
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (!name.trim() || !dosageValue || !activeProfile) return;
+  const handleRemoveTime = (index: number): void => {
+    setValue(
+      'times',
+      times.filter((_, i) => i !== index),
+    );
+  };
+
+  const onSubmit = async (data: MedicationFormData): Promise<void> => {
+    if (!activeProfile) return;
 
     const today = new Date().toISOString().split('T')[0] ?? '';
 
     if (isEditing && medId) {
       await medicationService.update(medId, {
-        name,
-        dosageValue: Number(dosageValue),
-        dosageUnit,
-        category,
-        notes: notes || null,
-        scheduleType,
-        times,
-        intervalHours: scheduleType === 'every_x_hours' ? Number(intervalHours) : null,
+        name: data.name,
+        dosageValue: data.dosageValue,
+        dosageUnit: data.dosageUnit,
+        category: data.category,
+        notes: data.notes || null,
+        scheduleType: data.scheduleType,
+        times: data.times,
+        intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : null,
       });
     } else {
       await medicationService.create({
         profileId: activeProfile.id,
-        name,
-        dosageValue: Number(dosageValue),
-        dosageUnit,
-        category,
-        scheduleType,
-        times,
-        intervalHours: scheduleType === 'every_x_hours' ? Number(intervalHours) : undefined,
+        name: data.name,
+        dosageValue: data.dosageValue,
+        dosageUnit: data.dosageUnit,
+        category: data.category,
+        scheduleType: data.scheduleType,
+        times: data.times,
+        intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : undefined,
         startDate: today,
+        notes: data.notes || undefined,
       });
     }
 
     // Reschedule all notifications after medication change
-    if (activeProfile) {
-      const allMeds = await medicationService.getAllForProfile(activeProfile.id);
-      await scheduleAllNotifications(allMeds, activeProfile.id);
-    }
+    const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+    await scheduleAllNotifications(allMeds, activeProfile.id);
 
     router.back();
   };
@@ -141,7 +184,6 @@ export default function MedicationFormScreen(): React.JSX.Element {
         text: t('medications.archive'),
         onPress: async () => {
           await medicationService.archive(medId);
-          // Reschedule notifications (archived med will be excluded)
           if (activeProfile) {
             const allMeds = await medicationService.getAllForProfile(activeProfile.id);
             await scheduleAllNotifications(allMeds, activeProfile.id);
@@ -153,10 +195,6 @@ export default function MedicationFormScreen(): React.JSX.Element {
   };
 
   const showTimeChips = scheduleType !== 'as_needed' && scheduleType !== 'every_x_hours';
-  const canSave =
-    name.trim().length > 0 &&
-    Number(dosageValue) > 0 &&
-    (scheduleType !== 'every_x_hours' || Number(intervalHours) > 0);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -176,31 +214,49 @@ export default function MedicationFormScreen(): React.JSX.Element {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Name */}
         <Text style={styles.label}>{t('medications.name')}</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder={t('medications.namePlaceholder')}
-          placeholderTextColor="#B0B0B0"
+        <Controller
+          control={control}
+          name="name"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors.name && styles.inputError]}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder={t('medications.namePlaceholder')}
+              placeholderTextColor="#B0B0B0"
+            />
+          )}
         />
+        {errors.name && <Text style={styles.errorText}>{t(errors.name.message ?? '')}</Text>}
 
         {/* Dosage */}
         <Text style={styles.label}>{t('medications.dosage')}</Text>
         <View style={styles.dosageRow}>
-          <TextInput
-            style={[styles.input, styles.dosageInput]}
-            value={dosageValue}
-            onChangeText={setDosageValue}
-            placeholder={t('medications.dosageValue')}
-            placeholderTextColor="#B0B0B0"
-            keyboardType="numeric"
+          <Controller
+            control={control}
+            name="dosageValue"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={[styles.input, styles.dosageInput, errors.dosageValue && styles.inputError]}
+                value={value !== undefined ? String(value) : ''}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder={t('medications.dosageValue')}
+                placeholderTextColor="#B0B0B0"
+                keyboardType="numeric"
+              />
+            )}
           />
+          {errors.dosageValue && (
+            <Text style={styles.errorText}>{t(errors.dosageValue.message ?? '')}</Text>
+          )}
           <View style={styles.chipRow}>
             {DOSAGE_UNITS.map((unit) => (
               <Pressable
                 key={unit}
                 style={[styles.chip, dosageUnit === unit && styles.chipSelected]}
-                onPress={() => setDosageUnit(unit)}
+                onPress={() => setValue('dosageUnit', unit, { shouldValidate: true })}
               >
                 <Text style={[styles.chipText, dosageUnit === unit && styles.chipTextSelected]}>
                   {t(`medications.units.${unit}`)}
@@ -215,7 +271,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
         <View style={styles.chipRow}>
           <Pressable
             style={[styles.chip, category === 'routine' && styles.chipSelected]}
-            onPress={() => setCategory('routine')}
+            onPress={() => setValue('category', 'routine', { shouldValidate: true })}
           >
             <Text style={[styles.chipText, category === 'routine' && styles.chipTextSelected]}>
               {t('medications.routine')}
@@ -223,7 +279,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
           </Pressable>
           <Pressable
             style={[styles.chip, category === 'as_needed' && styles.chipSelected]}
-            onPress={() => setCategory('as_needed')}
+            onPress={() => setValue('category', 'as_needed', { shouldValidate: true })}
           >
             <Text style={[styles.chipText, category === 'as_needed' && styles.chipTextSelected]}>
               {t('medications.asNeeded')}
@@ -241,7 +297,9 @@ export default function MedicationFormScreen(): React.JSX.Element {
               onPress={() => handleScheduleTypeChange(type)}
             >
               <Text style={[styles.chipText, scheduleType === type && styles.chipTextSelected]}>
-                {t(`medications.scheduleTypes.${type}`)}
+                {type === 'every_x_hours'
+                  ? t('medications.scheduleTypes.every_x_hours', { hours: intervalHours ?? 8 })
+                  : t(`medications.scheduleTypes.${type}`)}
               </Text>
             </Pressable>
           ))}
@@ -251,13 +309,27 @@ export default function MedicationFormScreen(): React.JSX.Element {
         {scheduleType === 'every_x_hours' && (
           <>
             <Text style={styles.label}>{t('medications.intervalHours')}</Text>
-            <TextInput
-              style={[styles.input, styles.smallInput]}
-              value={intervalHours}
-              onChangeText={setIntervalHours}
-              keyboardType="numeric"
-              maxLength={2}
+            <Controller
+              control={control}
+              name="intervalHours"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.smallInput,
+                    errors.intervalHours && styles.inputError,
+                  ]}
+                  value={value !== undefined ? String(value) : ''}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+              )}
             />
+            {errors.intervalHours && (
+              <Text style={styles.errorText}>{t(errors.intervalHours.message ?? '')}</Text>
+            )}
           </>
         )}
 
@@ -302,41 +374,57 @@ export default function MedicationFormScreen(): React.JSX.Element {
         )}
 
         {showTimePicker && (
-          <DateTimePicker
-            mode="time"
-            is24Hour
-            value={(() => {
-              const d = new Date();
-              if (editingTimeIndex !== null) {
-                const existing = times[editingTimeIndex];
-                if (existing) {
-                  const [h, m] = existing.split(':').map(Number);
-                  if (h !== undefined && m !== undefined) d.setHours(h, m, 0, 0);
+          <View style={styles.pickerContainer}>
+            <DateTimePicker
+              mode="time"
+              is24Hour
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              value={(() => {
+                if (pendingTime) return pendingTime;
+                const d = new Date();
+                if (editingTimeIndex !== null) {
+                  const existing = times[editingTimeIndex];
+                  if (existing) {
+                    const [h, m] = existing.split(':').map(Number);
+                    if (h !== undefined && m !== undefined) d.setHours(h, m, 0, 0);
+                  }
                 }
-              }
-              return d;
-            })()}
-            onChange={handleTimeChange}
-          />
+                return d;
+              })()}
+              onChange={handleTimeChange}
+            />
+            {Platform.OS === 'ios' && (
+              <Pressable style={styles.pickerDoneButton} onPress={handleTimePickerDone}>
+                <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+              </Pressable>
+            )}
+          </View>
         )}
 
         {/* Notes */}
         <Text style={styles.label}>{t('medications.notes')}</Text>
-        <TextInput
-          style={[styles.input, styles.notesInput]}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder={t('medications.notesPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={3}
+        <Controller
+          control={control}
+          name="notes"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, styles.notesInput]}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder={t('medications.notesPlaceholder')}
+              placeholderTextColor="#B0B0B0"
+              multiline
+              numberOfLines={3}
+            />
+          )}
         />
 
         {/* Save */}
         <Pressable
-          style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-          onPress={() => void handleSave()}
-          disabled={!canSave}
+          style={[styles.saveButton, !isValid && styles.saveButtonDisabled]}
+          onPress={handleSubmit((data) => void onSubmit(data))}
+          disabled={!isValid}
         >
           <Text style={styles.saveText}>{t('medications.save')}</Text>
         </Pressable>
@@ -388,6 +476,15 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.md,
     fontSize: theme.fontSize.md,
     color: theme.colors.text,
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.error,
+    marginTop: theme.spacing.xs,
   },
   dosageRow: {
     gap: theme.spacing.sm,
@@ -478,6 +575,24 @@ const styles = StyleSheet.create((theme) => ({
   addTimeText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  pickerContainer: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
+  },
+  pickerDoneButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.sm,
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  pickerDoneText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textOnPrimary,
     fontWeight: theme.fontWeight.semibold,
   },
   saveButton: {

@@ -163,7 +163,6 @@ export default function ProfilesScreen(): React.JSX.Element {
               activeProfile?.id === profile.id && styles.profileCardActive,
             ]}
             onPress={() => handleSwitch(profile)}
-            onLongPress={() => handleEdit(profile)}
           >
             <View style={[styles.profileAvatar, { backgroundColor: profile.avatarEmoji }]}>
               <Text style={styles.profileInitial}>{profile.name.charAt(0).toUpperCase()}</Text>
@@ -177,6 +176,22 @@ export default function ProfilesScreen(): React.JSX.Element {
                 <Text style={styles.activeBadgeText}>{t('profiles.active')}</Text>
               </View>
             )}
+            <View style={styles.profileActions}>
+              <Pressable
+                style={styles.profileActionButton}
+                onPress={() => handleEdit(profile)}
+                accessibilityLabel={`${t('profiles.editProfile')} ${profile.name}`}
+              >
+                <Text style={styles.profileActionText}>✎</Text>
+              </Pressable>
+              <Pressable
+                style={styles.profileActionButton}
+                onPress={() => handleDelete(profile.id)}
+                accessibilityLabel={`${t('profiles.deleteProfile')} ${profile.name}`}
+              >
+                <Text style={styles.profileDeleteText}>✕</Text>
+              </Pressable>
+            </View>
           </Pressable>
         ))}
 
@@ -340,6 +355,27 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSize.xs,
     color: theme.colors.textOnPrimary,
     fontWeight: theme.fontWeight.semibold,
+  },
+  profileActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.xs,
+    marginLeft: theme.spacing.sm,
+  },
+  profileActionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: theme.colors.surfaceSecondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileActionText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+  },
+  profileDeleteText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.error,
   },
   empty: {
     alignItems: 'center',
