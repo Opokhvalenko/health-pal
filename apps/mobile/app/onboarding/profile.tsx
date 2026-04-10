@@ -1,17 +1,37 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
+import { db, profiles } from '../../src/db';
+import { generateId, nowISO } from '../../src/db/helpers';
+import { useAppStore } from '../../src/stores';
 
 export default function ProfileScreen(): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
+  const { role = 'self' } = useLocalSearchParams<{ role?: string }>();
   const [name, setName] = useState('');
 
-  const createProfile = (): void => {
+  const createProfile = async (): Promise<void> => {
     if (name.trim().length === 0) return;
-    // TODO: save profile to SQLite + mark onboarding done in MMKV
+
+    const id = generateId();
+    const now = nowISO();
+    const profileRole = role === 'caregiver' ? 'caregiver' : 'self';
+
+    await db.insert(profiles).values({
+      id,
+      name: name.trim(),
+      role: profileRole,
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    useAppStore.getState().setActiveProfile({ id, name: name.trim(), role: profileRole });
+    useAppStore.getState().completeOnboarding();
+
     router.replace('/(tabs)');
   };
 
@@ -34,7 +54,7 @@ export default function ProfileScreen(): React.JSX.Element {
 
       <Pressable
         style={[styles.button, name.trim().length === 0 && styles.buttonDisabled]}
-        onPress={createProfile}
+        onPress={() => void createProfile()}
         disabled={name.trim().length === 0}
       >
         <Text style={styles.buttonText}>{t('onboarding.profile.continue')}</Text>
