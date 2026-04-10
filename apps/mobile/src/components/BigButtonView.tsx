@@ -42,7 +42,13 @@ export function BigButtonView(): React.JSX.Element {
       <View style={styles.center}>
         {nextPending ? (
           <>
-            <Pressable style={styles.bigButton} onPress={() => void handleTake()}>
+            <Pressable
+              style={styles.bigButton}
+              onPress={() => void handleTake()}
+              accessibilityRole="button"
+              accessibilityLabel={`${t('bigButton.takeNow')} ${nextPending.medicationName}`}
+              accessibilityHint={`${nextPending.dosageValue} ${nextPending.dosageUnit}`}
+            >
               <Text style={styles.bigButtonText}>{t('bigButton.takeNow')}</Text>
             </Pressable>
             <Text style={styles.medName}>{nextPending.medicationName}</Text>

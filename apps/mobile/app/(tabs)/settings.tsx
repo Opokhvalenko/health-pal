@@ -62,9 +62,16 @@ export default function SettingsScreen(): React.JSX.Element {
         {/* Profiles */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('settings.profiles')}</Text>
-          <Pressable style={styles.item} onPress={() => router.push('/profiles')}>
+          <Pressable
+            style={styles.item}
+            onPress={() => router.push('/profiles')}
+            accessibilityRole="button"
+            accessibilityLabel={t('settings.manageProfiles')}
+          >
             <Text style={styles.itemLabel}>{t('settings.manageProfiles')}</Text>
-            <Text style={styles.chevron}>›</Text>
+            <Text style={styles.chevron} importantForAccessibility="no">
+              ›
+            </Text>
           </Pressable>
         </View>
 
@@ -81,15 +88,26 @@ export default function SettingsScreen(): React.JSX.Element {
               value={calmMode}
               onValueChange={handleCalmToggle}
               trackColor={{ true: '#4A9B8E' }}
+              accessibilityLabel={t('settings.calmMode')}
             />
           </View>
 
-          <Pressable style={styles.item} onPress={handleThemeCycle}>
+          <Pressable
+            style={styles.item}
+            onPress={handleThemeCycle}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('settings.theme')}: ${themeLabel()}`}
+          >
             <Text style={styles.itemLabel}>{t('settings.theme')}</Text>
             <Text style={styles.itemValue}>{themeLabel()}</Text>
           </Pressable>
 
-          <Pressable style={styles.item} onPress={handleLanguageToggle}>
+          <Pressable
+            style={styles.item}
+            onPress={handleLanguageToggle}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('settings.language')}: ${locale === 'en' ? 'English' : 'Українська'}`}
+          >
             <Text style={styles.itemLabel}>{t('settings.language')}</Text>
             <Text style={styles.itemValue}>{locale === 'en' ? 'English' : 'Українська'}</Text>
           </Pressable>
@@ -98,13 +116,27 @@ export default function SettingsScreen(): React.JSX.Element {
         {/* Health */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('symptoms.title')}</Text>
-          <Pressable style={styles.item} onPress={() => router.push('/symptoms')}>
+          <Pressable
+            style={styles.item}
+            onPress={() => router.push('/symptoms')}
+            accessibilityRole="button"
+            accessibilityLabel={t('symptoms.title')}
+          >
             <Text style={styles.itemLabel}>{t('symptoms.title')}</Text>
-            <Text style={styles.chevron}>›</Text>
+            <Text style={styles.chevron} importantForAccessibility="no">
+              ›
+            </Text>
           </Pressable>
-          <Pressable style={styles.item} onPress={() => router.push('/report')}>
+          <Pressable
+            style={styles.item}
+            onPress={() => router.push('/report')}
+            accessibilityRole="button"
+            accessibilityLabel={t('report.title')}
+          >
             <Text style={styles.itemLabel}>{t('report.title')}</Text>
-            <Text style={styles.chevron}>›</Text>
+            <Text style={styles.chevron} importantForAccessibility="no">
+              ›
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

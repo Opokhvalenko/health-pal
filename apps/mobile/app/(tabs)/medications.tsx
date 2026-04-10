@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
+import { LoadingView } from '../../src/components/LoadingView';
 import type { MedicationWithSchedule } from '../../src/db';
 import { medicationService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
@@ -12,11 +13,13 @@ export default function MedicationsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
   const [meds, setMeds] = useState<MedicationWithSchedule[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const loadMeds = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
     const result = await medicationService.getAllForProfile(activeProfile.id);
     setMeds(result);
+    setLoading(false);
   }, [activeProfile]);
 
   useFocusEffect(
@@ -24,6 +27,8 @@ export default function MedicationsScreen(): React.JSX.Element {
       loadMeds();
     }, [loadMeds]),
   );
+
+  if (loading) return <LoadingView />;
 
   const routineMeds = meds.filter((m) => m.medication.category === 'routine');
   const asNeededMeds = meds.filter((m) => m.medication.category === 'as_needed');
@@ -39,7 +44,12 @@ export default function MedicationsScreen(): React.JSX.Element {
           <Text style={styles.emptyText}>{t('medications.empty')}</Text>
           <Text style={styles.emptyHint}>{t('medications.emptyHint')}</Text>
         </View>
-        <Pressable style={styles.fab} onPress={() => router.push('/medication-form')}>
+        <Pressable
+          style={styles.fab}
+          onPress={() => router.push('/medication-form')}
+          accessibilityRole="button"
+          accessibilityLabel={t('medications.addMedication')}
+        >
           <Text style={styles.fabText}>+</Text>
         </Pressable>
       </SafeAreaView>
@@ -94,6 +104,9 @@ function MedicationCard({
       onPress={() =>
         router.push({ pathname: '/medication-form', params: { medId: medication.id } })
       }
+      accessibilityRole="button"
+      accessibilityLabel={`${medication.name}, ${medication.dosageValue} ${t(`medications.units.${medication.dosageUnit}`)}`}
+      accessibilityHint={t('medications.editMedication')}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.cardName}>{medication.name}</Text>
