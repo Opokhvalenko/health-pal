@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import type { AdherencePeriod, DoseEvent } from '@health-pal/adherence-core';
 import { computeAdherence, computeStreak } from '@health-pal/adherence-core';
 import { useFocusEffect } from 'expo-router';
@@ -6,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
+import { LoadingView } from '../../src/components/LoadingView';
 import { doseEventService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
 
@@ -15,6 +17,7 @@ export default function AdherenceScreen(): React.JSX.Element {
   const calmMode = useAppStore((s) => s.calmMode);
   const [period, setPeriod] = useState<AdherencePeriod>('7d');
   const [events, setEvents] = useState<DoseEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const loadEvents = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
@@ -27,6 +30,7 @@ export default function AdherenceScreen(): React.JSX.Element {
       recordedAt: new Date(r.recordedAt),
     }));
     setEvents(mapped);
+    setLoading(false);
   }, [activeProfile]);
 
   useFocusEffect(
@@ -35,6 +39,8 @@ export default function AdherenceScreen(): React.JSX.Element {
     }, [loadEvents]),
   );
 
+  if (loading) return <LoadingView />;
+
   if (events.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -42,7 +48,7 @@ export default function AdherenceScreen(): React.JSX.Element {
           <Text style={styles.title}>{t('adherence.title')}</Text>
         </View>
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>📊</Text>
+          <Ionicons name="stats-chart-outline" size={48} color="#8AADA5" />
           <Text style={styles.emptyText}>{t('adherence.empty')}</Text>
           <Text style={styles.emptyHint}>{t('adherence.emptyHint')}</Text>
         </View>

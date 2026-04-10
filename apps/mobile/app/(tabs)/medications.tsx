@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,7 +41,7 @@ export default function MedicationsScreen(): React.JSX.Element {
           <Text style={styles.title}>{t('medications.title')}</Text>
         </View>
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>💊</Text>
+          <Ionicons name="medical-outline" size={48} color="#8AADA5" />
           <Text style={styles.emptyText}>{t('medications.empty')}</Text>
           <Text style={styles.emptyHint}>{t('medications.emptyHint')}</Text>
         </View>
@@ -117,7 +118,9 @@ function MedicationCard({
       {schedule && (
         <View style={styles.cardSchedule}>
           <Text style={styles.cardScheduleType}>
-            {t(`medications.scheduleTypes.${schedule.type}`)}
+            {t(`medications.scheduleTypes.${schedule.type}`, {
+              hours: schedule.intervalHours ?? '',
+            })}
           </Text>
           {schedule.times.length > 0 && (
             <View style={styles.cardTimes}>

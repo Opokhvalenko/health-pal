@@ -6,7 +6,7 @@ export const profiles = sqliteTable('profiles', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   role: text('role', { enum: ['self', 'caregiver', 'patient'] }).notNull(),
-  avatarEmoji: text('avatar_emoji').default('🧑'),
+  avatarEmoji: text('avatar_emoji').default('#4A9B8E'),
   isActive: integer('is_active', { mode: 'boolean' }).default(false),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),

@@ -52,7 +52,7 @@ describe('computeAdherence', () => {
     expect(result.skipped).toBe(1);
     expect(result.snoozed).toBe(1);
     expect(result.missed).toBe(1);
-    expect(result.adherencePercent).toBe(25);
+    expect(result.adherencePercent).toBe(33);
   });
 
   it('filters by 7d period', () => {

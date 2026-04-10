@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -93,7 +94,7 @@ export default function TodayScreen(): React.JSX.Element {
 
       {doses.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🌿</Text>
+          <Ionicons name="leaf-outline" size={48} color="#8AADA5" />
           <Text style={styles.emptyText}>{t('today.empty')}</Text>
           <Text style={styles.emptyHint}>{t('today.emptyHint')}</Text>
         </View>
@@ -124,7 +125,15 @@ export default function TodayScreen(): React.JSX.Element {
                     <Text style={styles.completedName}>{dose.medicationName}</Text>
                     <Text style={styles.completedTime}>{dose.timeStr}</Text>
                   </View>
-                  <Text style={styles.completedStatus}>{t(`dose.${dose.status}`)}</Text>
+                  <Text
+                    style={[
+                      styles.completedStatus,
+                      dose.status === 'skipped' && styles.completedSkipped,
+                      dose.status === 'snoozed' && styles.completedSnoozed,
+                    ]}
+                  >
+                    {t(`dose.${dose.status}`)}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -331,6 +340,12 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSize.sm,
     color: theme.colors.success,
     fontWeight: theme.fontWeight.semibold,
+  },
+  completedSkipped: {
+    color: theme.colors.warning,
+  },
+  completedSnoozed: {
+    color: theme.colors.textMuted,
   },
   empty: {
     flex: 1,

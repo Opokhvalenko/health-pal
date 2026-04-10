@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -176,7 +177,7 @@ export default function SymptomsScreen(): React.JSX.Element {
 
         {symptoms.length === 0 && !showForm && (
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>📝</Text>
+            <Ionicons name="clipboard-outline" size={48} color="#8AADA5" />
             <Text style={styles.emptyText}>{t('symptoms.empty')}</Text>
             <Text style={styles.emptyHint}>{t('symptoms.emptyHint')}</Text>
           </View>

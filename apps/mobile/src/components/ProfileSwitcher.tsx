@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Pressable, Text, View } from 'react-native';
@@ -38,9 +39,7 @@ export function ProfileSwitcher(): React.JSX.Element {
         accessibilityLabel={`${t('profiles.title')}: ${activeProfile.name}`}
         accessibilityHint={t('profiles.title')}
       >
-        <Text style={styles.emoji} importantForAccessibility="no">
-          {activeProfile.avatarEmoji}
-        </Text>
+        <Ionicons name="person-circle-outline" size={22} color="#4A9B8E" />
         <Text style={styles.name} numberOfLines={1}>
           {activeProfile.name}
         </Text>
@@ -64,7 +63,7 @@ export function ProfileSwitcher(): React.JSX.Element {
                 ]}
                 onPress={() => handleSwitch(profile)}
               >
-                <Text style={styles.dropdownEmoji}>{profile.avatarEmoji}</Text>
+                <Ionicons name="person-circle" size={28} color="#4A9B8E" />
                 <View style={styles.dropdownInfo}>
                   <Text style={styles.dropdownName}>{profile.name}</Text>
                   <Text style={styles.dropdownRole}>{t(`profiles.roles.${profile.role}`)}</Text>

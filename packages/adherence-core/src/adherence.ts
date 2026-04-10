@@ -17,7 +17,8 @@ export function computeAdherence(
   const snoozed = filtered.filter((e) => e.status === 'snoozed').length;
   const totalScheduled = filtered.length;
 
-  const adherencePercent = totalScheduled === 0 ? 0 : Math.round((taken / totalScheduled) * 100);
+  const actionable = totalScheduled - snoozed;
+  const adherencePercent = actionable === 0 ? 0 : Math.round((taken / actionable) * 100);
 
   return { totalScheduled, taken, skipped, missed, snoozed, adherencePercent };
 }

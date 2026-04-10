@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +36,7 @@ export function BigButtonView(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.profileEmoji}>{activeProfile?.avatarEmoji ?? '🧑'}</Text>
+        <Ionicons name="person-circle" size={48} color="#4A9B8E" />
         <Text style={styles.profileName}>{activeProfile?.name}</Text>
       </View>
 
@@ -58,7 +59,7 @@ export function BigButtonView(): React.JSX.Element {
           </>
         ) : (
           <>
-            <Text style={styles.nothingEmoji}>🌿</Text>
+            <Ionicons name="leaf-outline" size={64} color="#8AADA5" />
             <Text style={styles.nothingText}>{t('bigButton.nothingNow')}</Text>
           </>
         )}
