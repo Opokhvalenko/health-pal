@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { useAppStore } from '../../src/stores';
 
@@ -16,26 +16,18 @@ export default function SettingsScreen(): React.JSX.Element {
 
   const handleCalmToggle = (): void => {
     const next = !calmMode;
-    toggleCalmMode();
     if (next) {
       UnistylesRuntime.setTheme('calm');
     } else {
-      UnistylesRuntime.setAdaptiveThemes(true);
+      UnistylesRuntime.setTheme(theme === 'dark' ? 'dark' : 'light');
     }
+    toggleCalmMode();
   };
 
   const handleThemeCycle = (): void => {
-    const order: Array<'system' | 'light' | 'dark'> = ['system', 'light', 'dark'];
-    const currentIndex = order.indexOf(theme === 'calm' ? 'system' : theme);
-    const nextIndex = (currentIndex + 1) % order.length;
-    const next = order[nextIndex] ?? 'system';
+    const next = theme === 'dark' ? 'light' : 'dark';
+    UnistylesRuntime.setTheme(next);
     setTheme(next);
-
-    if (next === 'system') {
-      UnistylesRuntime.setAdaptiveThemes(true);
-    } else {
-      UnistylesRuntime.setTheme(next);
-    }
   };
 
   const handleLanguageToggle = (): void => {
@@ -46,14 +38,14 @@ export default function SettingsScreen(): React.JSX.Element {
 
   const themeLabel = (): string => {
     if (calmMode) return t('settings.calm');
-    if (theme === 'system') return t('settings.system');
-    if (theme === 'light') return t('settings.light');
     if (theme === 'dark') return t('settings.dark');
-    return t('settings.system');
+    return t('settings.light');
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('settings.title')}</Text>
@@ -140,7 +132,7 @@ export default function SettingsScreen(): React.JSX.Element {
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

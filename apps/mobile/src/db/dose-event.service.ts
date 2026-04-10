@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte } from 'drizzle-orm';
 import { db } from './client';
 import { generateId, nowISO } from './helpers';
 import { doseEvents } from './schema';
@@ -64,10 +64,10 @@ export const doseEventService = {
     const rows = await db
       .select()
       .from(doseEvents)
-      .where(and(eq(doseEvents.profileId, profileId)))
+      .where(and(eq(doseEvents.profileId, profileId), gte(doseEvents.scheduledAt, todayISO)))
       .orderBy(desc(doseEvents.scheduledAt));
 
-    return rows.filter((r) => r.scheduledAt >= todayISO).map(normalizeRow);
+    return rows.map(normalizeRow);
   },
 
   async updateStatus(eventId: string, status: DoseStatus): Promise<void> {

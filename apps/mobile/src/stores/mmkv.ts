@@ -24,12 +24,12 @@ export const mmkv = {
   setLocale: (locale: string): void => storage.set(KEYS.LOCALE, locale),
 
   // Theme
-  getTheme: (): 'light' | 'dark' | 'calm' | 'system' => {
+  getTheme: (): 'light' | 'dark' | 'calm' => {
     const value = storage.getString(KEYS.THEME);
     if (value === 'light' || value === 'dark' || value === 'calm') return value;
-    return 'system';
+    return 'light';
   },
-  setTheme: (theme: 'light' | 'dark' | 'calm' | 'system'): void => storage.set(KEYS.THEME, theme),
+  setTheme: (theme: 'light' | 'dark' | 'calm'): void => storage.set(KEYS.THEME, theme),
 
   // Calm mode
   isCalmMode: (): boolean => storage.getBoolean(KEYS.CALM_MODE) ?? false,

@@ -82,7 +82,7 @@
       "once_daily": "Once daily",
       "twice_daily": "Twice daily",
       "three_times_daily": "Three times daily",
-      "every_x_hours": "Every X hours",
+      "every_x_hours": "Every {{hours}} hours",
       "custom_times": "Custom times",
       "as_needed": "As needed"
     }
@@ -146,6 +146,7 @@
     "editProfile": "Edit Profile",
     "deleteProfile": "Delete Profile",
     "deleteConfirm": "Are you sure you want to delete this profile? All associated data will be lost.",
+    "cannotDeleteLast": "You cannot delete the only profile. Create another profile first.",
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",

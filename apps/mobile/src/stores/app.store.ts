@@ -34,8 +34,8 @@ interface AppState {
   setLocale: (locale: string) => void;
 
   // Theme
-  theme: 'light' | 'dark' | 'calm' | 'system';
-  setTheme: (theme: 'light' | 'dark' | 'calm' | 'system') => void;
+  theme: 'light' | 'dark' | 'calm';
+  setTheme: (theme: 'light' | 'dark' | 'calm') => void;
 
   // Hydrate from MMKV on app start
   hydrate: () => void;
@@ -47,7 +47,7 @@ export const useAppStore = create<AppState>((set) => ({
   profiles: [],
   calmMode: false,
   locale: 'en',
-  theme: 'system',
+  theme: 'light',
 
   completeOnboarding: () => {
     mmkv.setOnboardingDone(true);

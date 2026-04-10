@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
@@ -10,7 +11,7 @@ export default function WelcomeScreen(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.emoji}>💊</Text>
+        <Ionicons name="heart-circle" size={72} color="#4A9B8E" />
         <Text style={styles.title}>{t('onboarding.welcome.title')}</Text>
         <Text style={styles.subtitle}>{t('onboarding.welcome.subtitle')}</Text>
         <Text style={styles.description}>{t('onboarding.welcome.description')}</Text>

@@ -1,5 +1,4 @@
 import '../src/i18n';
-import '../src/theme/unistyles';
 import { Stack } from 'expo-router';
 import { openDatabaseSync } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
@@ -55,7 +54,7 @@ export default function RootLayout(): React.JSX.Element | null {
       <Stack screenOptions={{ headerShown: false }}>
         {isOnboardingDone ? <Stack.Screen name="(tabs)" /> : <Stack.Screen name="onboarding" />}
         <Stack.Screen name="profiles" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="medication-form" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="medication-form" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="symptoms" options={{ presentation: 'modal' }} />
         <Stack.Screen name="report" options={{ presentation: 'modal' }} />
       </Stack>

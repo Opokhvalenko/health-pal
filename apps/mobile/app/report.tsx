@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { printToFileAsync } from 'expo-print';
 import { router } from 'expo-router';
 import { shareAsync } from 'expo-sharing';
@@ -37,7 +38,7 @@ export default function ReportScreen(): React.JSX.Element {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.emoji}>📄</Text>
+        <Ionicons name="document-text-outline" size={64} color="#8AADA5" />
         <Text style={styles.description}>{t('report.description')}</Text>
 
         <Pressable

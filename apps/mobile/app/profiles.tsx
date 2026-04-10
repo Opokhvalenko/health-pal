@@ -8,7 +8,18 @@ import type { ProfileRole } from '../src/db';
 import { profileService } from '../src/db';
 import { useAppStore } from '../src/stores';
 
-const EMOJI_OPTIONS = ['🧑', '👩', '👨', '👶', '🧓', '👴', '👵', '💊', '❤️', '🌿'];
+const COLOR_OPTIONS = [
+  '#4A9B8E',
+  '#6C8EBF',
+  '#E8A87C',
+  '#C38BD2',
+  '#85C88A',
+  '#F0A4A4',
+  '#F6C065',
+  '#7BA7C9',
+  '#B0B0B0',
+  '#A0785A',
+];
 const ROLE_OPTIONS: ProfileRole[] = ['self', 'caregiver', 'patient'];
 
 export default function ProfilesScreen(): React.JSX.Element {
@@ -25,7 +36,7 @@ export default function ProfilesScreen(): React.JSX.Element {
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formRole, setFormRole] = useState<ProfileRole>('patient');
-  const [formEmoji, setFormEmoji] = useState('🧑');
+  const [formEmoji, setFormEmoji] = useState('#4A9B8E');
 
   const loadProfiles = useCallback(async (): Promise<void> => {
     const rows = await profileService.getAll();
@@ -41,7 +52,7 @@ export default function ProfilesScreen(): React.JSX.Element {
   const resetForm = (): void => {
     setFormName('');
     setFormRole('patient');
-    setFormEmoji('🧑');
+    setFormEmoji('#4A9B8E');
     setEditingId(null);
     setShowForm(false);
   };
@@ -98,6 +109,11 @@ export default function ProfilesScreen(): React.JSX.Element {
   };
 
   const handleDelete = (id: string): void => {
+    if (activeProfile?.id === id && profiles.length === 1) {
+      Alert.alert(t('profiles.deleteProfile'), t('profiles.cannotDeleteLast'));
+      return;
+    }
+
     Alert.alert(t('profiles.deleteProfile'), t('profiles.deleteConfirm'), [
       { text: t('profiles.cancel'), style: 'cancel' },
       {
@@ -106,6 +122,14 @@ export default function ProfilesScreen(): React.JSX.Element {
         onPress: async () => {
           await profileService.remove(id);
           removeProfileFromStore(id);
+          resetForm();
+
+          if (activeProfile?.id === id) {
+            const remaining = profiles.filter((p) => p.id !== id);
+            if (remaining[0]) {
+              setActiveProfile(remaining[0]);
+            }
+          }
         },
       },
     ]);
@@ -141,7 +165,9 @@ export default function ProfilesScreen(): React.JSX.Element {
             onPress={() => handleSwitch(profile)}
             onLongPress={() => handleEdit(profile)}
           >
-            <Text style={styles.profileEmoji}>{profile.avatarEmoji}</Text>
+            <View style={[styles.profileAvatar, { backgroundColor: profile.avatarEmoji }]}>
+              <Text style={styles.profileInitial}>{profile.name.charAt(0).toUpperCase()}</Text>
+            </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{profile.name}</Text>
               <Text style={styles.profileRole}>{t(`profiles.roles.${profile.role}`)}</Text>
@@ -191,17 +217,19 @@ export default function ProfilesScreen(): React.JSX.Element {
               ))}
             </View>
 
-            {/* Emoji selector */}
+            {/* Color selector */}
             <Text style={styles.formLabel}>{t('profiles.emoji')}</Text>
             <View style={styles.emojiRow}>
-              {EMOJI_OPTIONS.map((emoji) => (
+              {COLOR_OPTIONS.map((color) => (
                 <Pressable
-                  key={emoji}
-                  style={[styles.emojiOption, formEmoji === emoji && styles.emojiSelected]}
-                  onPress={() => setFormEmoji(emoji)}
-                >
-                  <Text style={styles.emojiText}>{emoji}</Text>
-                </Pressable>
+                  key={color}
+                  style={[
+                    styles.colorOption,
+                    { backgroundColor: color },
+                    formEmoji === color && styles.colorSelected,
+                  ]}
+                  onPress={() => setFormEmoji(color)}
+                />
               ))}
             </View>
 
@@ -223,7 +251,6 @@ export default function ProfilesScreen(): React.JSX.Element {
                 style={styles.deleteButton}
                 onPress={() => {
                   handleDelete(editingId);
-                  resetForm();
                 }}
               >
                 <Text style={styles.deleteText}>{t('profiles.delete')}</Text>
@@ -277,9 +304,18 @@ const styles = StyleSheet.create((theme) => ({
   profileCardActive: {
     borderColor: theme.colors.primary,
   },
-  profileEmoji: {
-    fontSize: 32,
+  profileAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: theme.spacing.md,
+  },
+  profileInitial: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: '#FFFFFF',
   },
   profileInfo: {
     flex: 1,
@@ -379,19 +415,16 @@ const styles = StyleSheet.create((theme) => ({
     flexWrap: 'wrap',
     gap: theme.spacing.sm,
   },
-  emojiOption: {
-    width: 44,
-    height: 44,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  colorOption: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
-  emojiSelected: {
-    backgroundColor: theme.colors.primary,
-  },
-  emojiText: {
-    fontSize: 24,
+  colorSelected: {
+    borderColor: theme.colors.text,
+    borderWidth: 3,
   },
   formActions: {
     flexDirection: 'row',

@@ -2,17 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  Keyboard,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { MedicationCategory, ScheduleType } from '../src/db';
@@ -150,203 +140,201 @@ export default function MedicationFormScreen(): React.JSX.Element {
   };
 
   const showTimeChips = scheduleType !== 'as_needed' && scheduleType !== 'every_x_hours';
-  const canSave = name.trim().length > 0 && Number(dosageValue) > 0;
+  const canSave =
+    name.trim().length > 0 &&
+    Number(dosageValue) > 0 &&
+    (scheduleType !== 'every_x_hours' || Number(intervalHours) > 0);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-          >
-            <Text style={styles.backButton}>‹ {t('common.back')}</Text>
-          </Pressable>
-          <Text style={styles.title}>
-            {isEditing ? t('medications.editMedication') : t('medications.addMedication')}
-          </Text>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.back')}
+        >
+          <Text style={styles.backButton}>‹ {t('common.back')}</Text>
+        </Pressable>
+        <Text style={styles.title}>
+          {isEditing ? t('medications.editMedication') : t('medications.addMedication')}
+        </Text>
+      </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Name */}
-          <Text style={styles.label}>{t('medications.name')}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Name */}
+        <Text style={styles.label}>{t('medications.name')}</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder={t('medications.namePlaceholder')}
+          placeholderTextColor="#B0B0B0"
+        />
+
+        {/* Dosage */}
+        <Text style={styles.label}>{t('medications.dosage')}</Text>
+        <View style={styles.dosageRow}>
           <TextInput
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-            placeholder={t('medications.namePlaceholder')}
+            style={[styles.input, styles.dosageInput]}
+            value={dosageValue}
+            onChangeText={setDosageValue}
+            placeholder={t('medications.dosageValue')}
             placeholderTextColor="#B0B0B0"
+            keyboardType="numeric"
           />
-
-          {/* Dosage */}
-          <Text style={styles.label}>{t('medications.dosage')}</Text>
-          <View style={styles.dosageRow}>
-            <TextInput
-              style={[styles.input, styles.dosageInput]}
-              value={dosageValue}
-              onChangeText={setDosageValue}
-              placeholder={t('medications.dosageValue')}
-              placeholderTextColor="#B0B0B0"
-              keyboardType="numeric"
-            />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.unitScroll}>
-              <View style={styles.chipRow}>
-                {DOSAGE_UNITS.map((unit) => (
-                  <Pressable
-                    key={unit}
-                    style={[styles.chip, dosageUnit === unit && styles.chipSelected]}
-                    onPress={() => setDosageUnit(unit)}
-                  >
-                    <Text style={[styles.chipText, dosageUnit === unit && styles.chipTextSelected]}>
-                      {t(`medications.units.${unit}`)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          {/* Category */}
-          <Text style={styles.label}>{t('medications.category')}</Text>
           <View style={styles.chipRow}>
-            <Pressable
-              style={[styles.chip, category === 'routine' && styles.chipSelected]}
-              onPress={() => setCategory('routine')}
-            >
-              <Text style={[styles.chipText, category === 'routine' && styles.chipTextSelected]}>
-                {t('medications.routine')}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[styles.chip, category === 'as_needed' && styles.chipSelected]}
-              onPress={() => setCategory('as_needed')}
-            >
-              <Text style={[styles.chipText, category === 'as_needed' && styles.chipTextSelected]}>
-                {t('medications.asNeeded')}
-              </Text>
-            </Pressable>
-          </View>
-
-          {/* Schedule Type */}
-          <Text style={styles.label}>{t('medications.scheduleType')}</Text>
-          <View style={styles.chipWrap}>
-            {SCHEDULE_TYPES.map((type) => (
+            {DOSAGE_UNITS.map((unit) => (
               <Pressable
-                key={type}
-                style={[styles.chip, scheduleType === type && styles.chipSelected]}
-                onPress={() => handleScheduleTypeChange(type)}
+                key={unit}
+                style={[styles.chip, dosageUnit === unit && styles.chipSelected]}
+                onPress={() => setDosageUnit(unit)}
               >
-                <Text style={[styles.chipText, scheduleType === type && styles.chipTextSelected]}>
-                  {t(`medications.scheduleTypes.${type}`)}
+                <Text style={[styles.chipText, dosageUnit === unit && styles.chipTextSelected]}>
+                  {t(`medications.units.${unit}`)}
                 </Text>
               </Pressable>
             ))}
           </View>
+        </View>
 
-          {/* Interval hours (for every_x_hours) */}
-          {scheduleType === 'every_x_hours' && (
-            <>
-              <Text style={styles.label}>{t('medications.intervalHours')}</Text>
-              <TextInput
-                style={[styles.input, styles.smallInput]}
-                value={intervalHours}
-                onChangeText={setIntervalHours}
-                keyboardType="numeric"
-                maxLength={2}
-              />
-            </>
-          )}
+        {/* Category */}
+        <Text style={styles.label}>{t('medications.category')}</Text>
+        <View style={styles.chipRow}>
+          <Pressable
+            style={[styles.chip, category === 'routine' && styles.chipSelected]}
+            onPress={() => setCategory('routine')}
+          >
+            <Text style={[styles.chipText, category === 'routine' && styles.chipTextSelected]}>
+              {t('medications.routine')}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.chip, category === 'as_needed' && styles.chipSelected]}
+            onPress={() => setCategory('as_needed')}
+          >
+            <Text style={[styles.chipText, category === 'as_needed' && styles.chipTextSelected]}>
+              {t('medications.asNeeded')}
+            </Text>
+          </Pressable>
+        </View>
 
-          {/* Time Chips */}
-          {showTimeChips && (
-            <>
-              <Text style={styles.label}>{t('medications.times')}</Text>
-              <View style={styles.timeChipsContainer}>
-                {times.map((time, index) => (
-                  <View key={time} style={styles.timeChip}>
-                    <Pressable
-                      onPress={() => {
-                        setEditingTimeIndex(index);
-                        setShowTimePicker(true);
-                      }}
-                    >
-                      <Text style={styles.timeChipText}>{time}</Text>
-                    </Pressable>
-                    {times.length > 1 && (
-                      <Pressable
-                        onPress={() => handleRemoveTime(index)}
-                        style={styles.timeChipRemove}
-                      >
-                        <Text style={styles.timeChipRemoveText}>×</Text>
-                      </Pressable>
-                    )}
-                  </View>
-                ))}
-                {scheduleType === 'custom_times' && (
+        {/* Schedule Type */}
+        <Text style={styles.label}>{t('medications.scheduleType')}</Text>
+        <View style={styles.chipWrap}>
+          {SCHEDULE_TYPES.map((type) => (
+            <Pressable
+              key={type}
+              style={[styles.chip, scheduleType === type && styles.chipSelected]}
+              onPress={() => handleScheduleTypeChange(type)}
+            >
+              <Text style={[styles.chipText, scheduleType === type && styles.chipTextSelected]}>
+                {t(`medications.scheduleTypes.${type}`)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Interval hours (for every_x_hours) */}
+        {scheduleType === 'every_x_hours' && (
+          <>
+            <Text style={styles.label}>{t('medications.intervalHours')}</Text>
+            <TextInput
+              style={[styles.input, styles.smallInput]}
+              value={intervalHours}
+              onChangeText={setIntervalHours}
+              keyboardType="numeric"
+              maxLength={2}
+            />
+          </>
+        )}
+
+        {/* Time Chips */}
+        {showTimeChips && (
+          <>
+            <Text style={styles.label}>{t('medications.times')}</Text>
+            <View style={styles.timeChipsContainer}>
+              {times.map((time, index) => (
+                <View key={time} style={styles.timeChip}>
                   <Pressable
-                    style={styles.addTimeButton}
                     onPress={() => {
-                      setEditingTimeIndex(null);
+                      setEditingTimeIndex(index);
                       setShowTimePicker(true);
                     }}
                   >
-                    <Text style={styles.addTimeText}>+ {t('medications.addTime')}</Text>
+                    <Text style={styles.timeChipText}>{time}</Text>
                   </Pressable>
-                )}
-              </View>
-            </>
-          )}
+                  {times.length > 1 && (
+                    <Pressable
+                      onPress={() => handleRemoveTime(index)}
+                      style={styles.timeChipRemove}
+                    >
+                      <Text style={styles.timeChipRemoveText}>×</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+              {scheduleType === 'custom_times' && (
+                <Pressable
+                  style={styles.addTimeButton}
+                  onPress={() => {
+                    setEditingTimeIndex(null);
+                    setShowTimePicker(true);
+                  }}
+                >
+                  <Text style={styles.addTimeText}>+ {t('medications.addTime')}</Text>
+                </Pressable>
+              )}
+            </View>
+          </>
+        )}
 
-          {showTimePicker && (
-            <DateTimePicker
-              mode="time"
-              is24Hour
-              value={(() => {
-                const d = new Date();
-                if (editingTimeIndex !== null) {
-                  const existing = times[editingTimeIndex];
-                  if (existing) {
-                    const [h, m] = existing.split(':').map(Number);
-                    if (h !== undefined && m !== undefined) d.setHours(h, m, 0, 0);
-                  }
+        {showTimePicker && (
+          <DateTimePicker
+            mode="time"
+            is24Hour
+            value={(() => {
+              const d = new Date();
+              if (editingTimeIndex !== null) {
+                const existing = times[editingTimeIndex];
+                if (existing) {
+                  const [h, m] = existing.split(':').map(Number);
+                  if (h !== undefined && m !== undefined) d.setHours(h, m, 0, 0);
                 }
-                return d;
-              })()}
-              onChange={handleTimeChange}
-            />
-          )}
-
-          {/* Notes */}
-          <Text style={styles.label}>{t('medications.notes')}</Text>
-          <TextInput
-            style={[styles.input, styles.notesInput]}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder={t('medications.notesPlaceholder')}
-            placeholderTextColor="#B0B0B0"
-            multiline
-            numberOfLines={3}
+              }
+              return d;
+            })()}
+            onChange={handleTimeChange}
           />
+        )}
 
-          {/* Save */}
-          <Pressable
-            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-            onPress={() => void handleSave()}
-            disabled={!canSave}
-          >
-            <Text style={styles.saveText}>{t('medications.save')}</Text>
+        {/* Notes */}
+        <Text style={styles.label}>{t('medications.notes')}</Text>
+        <TextInput
+          style={[styles.input, styles.notesInput]}
+          value={notes}
+          onChangeText={setNotes}
+          placeholder={t('medications.notesPlaceholder')}
+          placeholderTextColor="#B0B0B0"
+          multiline
+          numberOfLines={3}
+        />
+
+        {/* Save */}
+        <Pressable
+          style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+          onPress={() => void handleSave()}
+          disabled={!canSave}
+        >
+          <Text style={styles.saveText}>{t('medications.save')}</Text>
+        </Pressable>
+
+        {isEditing && (
+          <Pressable style={styles.archiveButton} onPress={handleArchive}>
+            <Text style={styles.archiveText}>{t('medications.archive')}</Text>
           </Pressable>
-
-          {/* Archive (edit only) */}
-          {isEditing && (
-            <Pressable style={styles.archiveButton} onPress={handleArchive}>
-              <Text style={styles.archiveText}>{t('medications.archive')}</Text>
-            </Pressable>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -372,7 +360,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.xxl,
+    paddingBottom: 120,
   },
   label: {
     fontSize: theme.fontSize.sm,
@@ -406,6 +394,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   chipRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: theme.spacing.sm,
   },
   chipWrap: {
