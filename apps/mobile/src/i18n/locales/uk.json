@@ -34,7 +34,10 @@
     "greeting": "Доброго ранку",
     "title": "План на сьогодні",
     "empty": "Ліків ще немає",
-    "emptyHint": "Додайте перші ліки, щоб розпочати"
+    "emptyHint": "Додайте перші ліки, щоб розпочати",
+    "nextDose": "Наступний прийом",
+    "recentDoses": "Останні прийоми",
+    "noDosesToday": "На сьогодні прийомів не заплановано"
   },
   "medications": {
     "title": "Ліки",
@@ -50,12 +53,63 @@
     "title": "Налаштування",
     "preferences": "Параметри",
     "calmMode": "Спокійний режим",
+    "calmModeDescription": "Приховати лічильники прострочених і зменшити тривожність",
     "language": "Мова",
     "theme": "Тема",
     "on": "Увімк.",
     "off": "Вимк.",
     "system": "Системна",
+    "light": "Світла",
+    "dark": "Темна",
+    "calm": "Спокійна",
     "english": "English",
-    "ukrainian": "Українська"
+    "ukrainian": "Українська",
+    "profiles": "Профілі",
+    "manageProfiles": "Керувати профілями",
+    "about": "Про додаток",
+    "version": "Версія"
+  },
+  "profiles": {
+    "title": "Профілі",
+    "addProfile": "Додати профіль",
+    "editProfile": "Редагувати профіль",
+    "deleteProfile": "Видалити профіль",
+    "deleteConfirm": "Ви впевнені, що хочете видалити цей профіль? Усі пов'язані дані буде втрачено.",
+    "cancel": "Скасувати",
+    "save": "Зберегти",
+    "delete": "Видалити",
+    "name": "Ім'я",
+    "namePlaceholder": "Введіть ім'я",
+    "role": "Роль",
+    "emoji": "Аватар",
+    "switchedTo": "Перемкнуто на {{name}}",
+    "roles": {
+      "self": "Я",
+      "caregiver": "Опікун",
+      "patient": "Пацієнт"
+    },
+    "active": "Активний",
+    "noProfiles": "Профілів ще немає"
+  },
+  "caregiver": {
+    "dashboard": "Панель керування",
+    "todaysPlan": "План на сьогодні",
+    "nextMedication": "Наступний препарат",
+    "recentDoses": "Останні прийоми",
+    "nothingScheduled": "Нічого не заплановано",
+    "allDone": "Усе виконано на сьогодні",
+    "managingFor": "Керування для {{name}}"
+  },
+  "bigButton": {
+    "takeNow": "Прийняти",
+    "done": "Готово!",
+    "nothingNow": "Зараз нічого",
+    "nextAt": "Наступний о {{time}}"
+  },
+  "common": {
+    "back": "Назад",
+    "close": "Закрити",
+    "confirm": "Підтвердити",
+    "cancel": "Скасувати"
   }
 }

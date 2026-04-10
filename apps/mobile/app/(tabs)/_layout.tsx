@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native';
-import { useStyles } from 'react-native-unistyles';
+import { useUnistyles } from 'react-native-unistyles';
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }): React.JSX.Element {
   return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{label}</Text>;
@@ -9,7 +9,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }): React
 
 export default function TabsLayout(): React.JSX.Element {
   const { t } = useTranslation();
-  const { theme } = useStyles();
+  const { theme } = useUnistyles();
 
   return (
     <Tabs

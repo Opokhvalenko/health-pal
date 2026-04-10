@@ -29,7 +29,9 @@ export default function ProfileScreen(): React.JSX.Element {
       updatedAt: now,
     });
 
-    useAppStore.getState().setActiveProfile({ id, name: name.trim(), role: profileRole });
+    useAppStore
+      .getState()
+      .setActiveProfile({ id, name: name.trim(), role: profileRole, avatarEmoji: '🧑' });
     useAppStore.getState().completeOnboarding();
 
     router.replace('/(tabs)');

@@ -34,7 +34,10 @@
     "greeting": "Good morning",
     "title": "Today's Plan",
     "empty": "No medications yet",
-    "emptyHint": "Add your first medication to get started"
+    "emptyHint": "Add your first medication to get started",
+    "nextDose": "Next dose",
+    "recentDoses": "Recent doses",
+    "noDosesToday": "No doses scheduled for today"
   },
   "medications": {
     "title": "Medications",
@@ -50,12 +53,63 @@
     "title": "Settings",
     "preferences": "Preferences",
     "calmMode": "Calm Mode",
+    "calmModeDescription": "Hide overdue counters and reduce anxiety",
     "language": "Language",
     "theme": "Theme",
     "on": "On",
     "off": "Off",
     "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "calm": "Calm",
     "english": "English",
-    "ukrainian": "Ukrainian"
+    "ukrainian": "Ukrainian",
+    "profiles": "Profiles",
+    "manageProfiles": "Manage Profiles",
+    "about": "About",
+    "version": "Version"
+  },
+  "profiles": {
+    "title": "Profiles",
+    "addProfile": "Add Profile",
+    "editProfile": "Edit Profile",
+    "deleteProfile": "Delete Profile",
+    "deleteConfirm": "Are you sure you want to delete this profile? All associated data will be lost.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "name": "Name",
+    "namePlaceholder": "Enter name",
+    "role": "Role",
+    "emoji": "Avatar",
+    "switchedTo": "Switched to {{name}}",
+    "roles": {
+      "self": "Self",
+      "caregiver": "Caregiver",
+      "patient": "Patient"
+    },
+    "active": "Active",
+    "noProfiles": "No profiles yet"
+  },
+  "caregiver": {
+    "dashboard": "Dashboard",
+    "todaysPlan": "Today's Plan",
+    "nextMedication": "Next Medication",
+    "recentDoses": "Recent Doses",
+    "nothingScheduled": "Nothing scheduled",
+    "allDone": "All done for today",
+    "managingFor": "Managing for {{name}}"
+  },
+  "bigButton": {
+    "takeNow": "Take",
+    "done": "Done!",
+    "nothingNow": "Nothing right now",
+    "nextAt": "Next at {{time}}"
+  },
+  "common": {
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }
