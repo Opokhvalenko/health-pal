@@ -1,0 +1,33 @@
+{
+  "name": "health-pal",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "npm run start --workspace=apps/mobile",
+    "test:engine": "npm run test --workspace=packages/schedule-engine",
+    "test:adherence": "npm run test --workspace=packages/adherence-core",
+    "test:packages": "npm run test:engine && npm run test:adherence",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npx biome check .",
+    "lint:fix": "npx biome check --write .",
+    "format": "npx biome format --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": [
+      "npx biome check --write --no-errors-on-unmatched"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.11",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "vitest": "^4.1.4"
+  }
+}

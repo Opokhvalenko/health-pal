@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Metro
+.metro-health-check*
+
+# iOS
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+*.xcworkspace
+*.xcuserdata
+
+# Android
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/.gradle/
+local.properties
+*.apk
+*.aab
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# EAS
+eas-build-*.json
+
+# Sentry
+.sentryclirc

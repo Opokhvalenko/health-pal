@@ -1,0 +1,61 @@
+{
+  "app": {
+    "name": "HealthPal",
+    "tagline": "Calm. Local. Yours."
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "HealthPal",
+      "subtitle": "Calm. Local. Yours.",
+      "description": "Your medications, your device, your privacy.\nNo account required.",
+      "getStarted": "Get Started"
+    },
+    "role": {
+      "title": "Who are you managing\nmedications for?",
+      "self": "Myself",
+      "selfDescription": "I want to track my own medications and stay on schedule.",
+      "caregiver": "Someone I care for",
+      "caregiverDescription": "I help a family member or loved one manage their medications."
+    },
+    "profile": {
+      "title": "What's their name?",
+      "subtitle": "You can always change this later.",
+      "namePlaceholder": "Name",
+      "continue": "Continue"
+    }
+  },
+  "tabs": {
+    "today": "Today",
+    "medications": "Meds",
+    "adherence": "Adherence",
+    "settings": "Settings"
+  },
+  "today": {
+    "greeting": "Good morning",
+    "title": "Today's Plan",
+    "empty": "No medications yet",
+    "emptyHint": "Add your first medication to get started"
+  },
+  "medications": {
+    "title": "Medications",
+    "empty": "No medications added",
+    "emptyHint": "Tap + to add your first medication"
+  },
+  "adherence": {
+    "title": "Adherence",
+    "empty": "No data yet",
+    "emptyHint": "Start logging doses to see your adherence"
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "calmMode": "Calm Mode",
+    "language": "Language",
+    "theme": "Theme",
+    "on": "On",
+    "off": "Off",
+    "system": "System",
+    "english": "English",
+    "ukrainian": "Ukrainian"
+  }
+}

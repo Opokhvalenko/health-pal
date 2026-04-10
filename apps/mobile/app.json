@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "HealthPal",
+    "slug": "health-pal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "health-pal",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F0EB"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.healthpal.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F5F0EB"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.healthpal.app"
+    },
+    "plugins": ["expo-router"]
+  }
+}
