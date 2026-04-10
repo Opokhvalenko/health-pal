@@ -1,5 +1,7 @@
 export type { Database } from './client';
 export { db } from './client';
+export type { DoseEventRow, DoseStatus, LogDoseInput } from './dose-event.service';
+export { doseEventService } from './dose-event.service';
 export type {
   CreateMedicationInput,
   MedicationCategory,
