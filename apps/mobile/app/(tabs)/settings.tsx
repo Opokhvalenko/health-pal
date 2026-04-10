@@ -94,6 +94,19 @@ export default function SettingsScreen(): React.JSX.Element {
             <Text style={styles.itemValue}>{locale === 'en' ? 'English' : 'Українська'}</Text>
           </Pressable>
         </View>
+
+        {/* Health */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('symptoms.title')}</Text>
+          <Pressable style={styles.item} onPress={() => router.push('/symptoms')}>
+            <Text style={styles.itemLabel}>{t('symptoms.title')}</Text>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+          <Pressable style={styles.item} onPress={() => router.push('/report')}>
+            <Text style={styles.itemLabel}>{t('report.title')}</Text>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

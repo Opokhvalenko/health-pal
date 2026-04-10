@@ -1,0 +1,126 @@
+import type { AdherenceSummary } from '@health-pal/adherence-core';
+import { computeAdherence } from '@health-pal/adherence-core';
+import type { DoseEventRow, MedicationWithSchedule, SymptomRow } from '../db';
+import { doseEventService, medicationService, symptomService } from '../db';
+
+export interface ReportData {
+  readonly patientName: string;
+  readonly generatedAt: string;
+  readonly medications: MedicationWithSchedule[];
+  readonly adherence: AdherenceSummary;
+  readonly recentDoses: DoseEventRow[];
+  readonly recentSymptoms: SymptomRow[];
+}
+
+export async function gatherReportData(
+  profileId: string,
+  profileName: string,
+): Promise<ReportData> {
+  const [medications, doseRows, symptoms] = await Promise.all([
+    medicationService.getAllForProfile(profileId),
+    doseEventService.getForProfile(profileId, 30),
+    symptomService.getForProfile(profileId, 20),
+  ]);
+
+  const doseEvents = doseRows.map((r) => ({
+    id: r.id,
+    scheduleId: r.scheduleId,
+    scheduledAt: new Date(r.scheduledAt),
+    status: r.status,
+    recordedAt: new Date(r.recordedAt),
+  }));
+
+  const adherence = computeAdherence(doseEvents, '30d');
+
+  return {
+    patientName: profileName,
+    generatedAt: new Date().toLocaleDateString(),
+    medications,
+    adherence,
+    recentDoses: doseRows.slice(0, 20),
+    recentSymptoms: symptoms.slice(0, 10),
+  };
+}
+
+export function buildReportHtml(data: ReportData): string {
+  const medsRows = data.medications
+    .map(
+      (m) =>
+        `<tr>
+      <td>${m.medication.name}</td>
+      <td>${m.medication.dosageValue} ${m.medication.dosageUnit}</td>
+      <td>${m.medication.category === 'routine' ? 'Routine' : 'As needed'}</td>
+      <td>${m.schedule ? m.schedule.times.join(', ') : '—'}</td>
+    </tr>`,
+    )
+    .join('');
+
+  const dosesRows = data.recentDoses
+    .map((d) => {
+      const date = new Date(d.scheduledAt);
+      const dateStr = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+      return `<tr><td>${dateStr}</td><td>${d.status}</td></tr>`;
+    })
+    .join('');
+
+  const symptomsRows = data.recentSymptoms
+    .map((s) => {
+      const date = new Date(s.loggedAt);
+      const dateStr = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+      return `<tr><td>${s.name}</td><td>${s.severity}/10</td><td>${dateStr}</td><td>${s.note ?? ''}</td></tr>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, Helvetica, sans-serif; padding: 40px; color: #2D2D2D; font-size: 12px; }
+    h1 { color: #4A9B8E; font-size: 22px; margin-bottom: 4px; }
+    h2 { color: #4A9B8E; font-size: 16px; margin-top: 24px; border-bottom: 1px solid #E8E8E8; padding-bottom: 4px; }
+    .meta { color: #7A7A7A; font-size: 11px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #F0F0F0; }
+    th { background: #F5F0EB; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-grid { display: flex; gap: 16px; margin-top: 8px; }
+    .stat-box { background: #F5F0EB; border-radius: 8px; padding: 12px 16px; text-align: center; flex: 1; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #4A9B8E; }
+    .stat-label { font-size: 10px; color: #7A7A7A; margin-top: 2px; }
+    .footer { margin-top: 30px; font-size: 10px; color: #B0B0B0; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>HealthPal — Medical Report</h1>
+  <p class="meta">Patient: ${data.patientName} | Generated: ${data.generatedAt}</p>
+
+  <h2>Active Medications</h2>
+  <table>
+    <tr><th>Name</th><th>Dosage</th><th>Category</th><th>Times</th></tr>
+    ${medsRows || '<tr><td colspan="4">No medications</td></tr>'}
+  </table>
+
+  <h2>Adherence Summary (30 days)</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-value">${data.adherence.adherencePercent}%</div><div class="stat-label">Adherence</div></div>
+    <div class="stat-box"><div class="stat-value">${data.adherence.taken}</div><div class="stat-label">Taken</div></div>
+    <div class="stat-box"><div class="stat-value">${data.adherence.missed}</div><div class="stat-label">Missed</div></div>
+    <div class="stat-box"><div class="stat-value">${data.adherence.totalScheduled}</div><div class="stat-label">Scheduled</div></div>
+  </div>
+
+  <h2>Recent Dose History</h2>
+  <table>
+    <tr><th>Date/Time</th><th>Status</th></tr>
+    ${dosesRows || '<tr><td colspan="2">No dose history</td></tr>'}
+  </table>
+
+  <h2>Recent Symptoms</h2>
+  <table>
+    <tr><th>Symptom</th><th>Severity</th><th>Date</th><th>Note</th></tr>
+    ${symptomsRows || '<tr><td colspan="4">No symptoms logged</td></tr>'}
+  </table>
+
+  <p class="footer">Generated by HealthPal — Calm. Local. Yours.</p>
+</body>
+</html>`;
+}
