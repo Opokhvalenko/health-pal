@@ -90,7 +90,35 @@
   "adherence": {
     "title": "Adherence",
     "empty": "No data yet",
-    "emptyHint": "Start logging doses to see your adherence"
+    "emptyHint": "Start logging doses to see your adherence",
+    "period7d": "7 days",
+    "period30d": "30 days",
+    "periodAll": "All time",
+    "adherencePercent": "{{percent}}%",
+    "taken": "Taken",
+    "skipped": "Skipped",
+    "missed": "Missed",
+    "snoozed": "Snoozed",
+    "scheduled": "Scheduled",
+    "streak": "Current streak",
+    "longestStreak": "Longest streak",
+    "days": "{{count}} days",
+    "day": "{{count}} day",
+    "summary": "Summary"
+  },
+  "dose": {
+    "take": "Take",
+    "skip": "Skip",
+    "snooze": "Snooze",
+    "taken": "Taken",
+    "skipped": "Skipped",
+    "missed": "Missed",
+    "snoozed": "Snoozed",
+    "scheduled": "Scheduled at {{time}}",
+    "dueNow": "Due now",
+    "upcoming": "Upcoming",
+    "completed": "Completed",
+    "todayProgress": "{{done}} of {{total}} done"
   },
   "settings": {
     "title": "Settings",

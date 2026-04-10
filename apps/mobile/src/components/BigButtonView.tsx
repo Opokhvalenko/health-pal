@@ -1,15 +1,36 @@
+import { useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
+import { doseEventService } from '../db';
+import { useTodayDoses } from '../hooks/useTodayDoses';
 import { useAppStore } from '../stores';
 
 export function BigButtonView(): React.JSX.Element {
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
+  const { doses, reload } = useTodayDoses(activeProfile?.id);
 
-  // TODO: Wire to real dose events in Phase 4
-  const hasNextDose = false;
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
+
+  const nextPending = doses.find((d) => d.status === 'pending');
+
+  const handleTake = async (): Promise<void> => {
+    if (!nextPending || !activeProfile) return;
+    await doseEventService.logDose({
+      scheduleId: nextPending.scheduleId,
+      profileId: activeProfile.id,
+      scheduledAt: nextPending.scheduledAt.toISOString(),
+      status: 'taken',
+    });
+    await reload();
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -19,10 +40,16 @@ export function BigButtonView(): React.JSX.Element {
       </View>
 
       <View style={styles.center}>
-        {hasNextDose ? (
-          <Pressable style={styles.bigButton}>
-            <Text style={styles.bigButtonText}>{t('bigButton.takeNow')}</Text>
-          </Pressable>
+        {nextPending ? (
+          <>
+            <Pressable style={styles.bigButton} onPress={() => void handleTake()}>
+              <Text style={styles.bigButtonText}>{t('bigButton.takeNow')}</Text>
+            </Pressable>
+            <Text style={styles.medName}>{nextPending.medicationName}</Text>
+            <Text style={styles.medTime}>
+              {nextPending.dosageValue} {nextPending.dosageUnit} — {nextPending.timeStr}
+            </Text>
+          </>
         ) : (
           <>
             <Text style={styles.nothingEmoji}>🌿</Text>
@@ -76,6 +103,17 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSize.title,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.textOnPrimary,
+  },
+  medName: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+    marginTop: theme.spacing.lg,
+  },
+  medTime: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xs,
   },
   nothingEmoji: {
     fontSize: 64,

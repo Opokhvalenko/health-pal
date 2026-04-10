@@ -90,7 +90,35 @@
   "adherence": {
     "title": "Прийом",
     "empty": "Даних ще немає",
-    "emptyHint": "Почніть відмічати прийом, щоб побачити статистику"
+    "emptyHint": "Почніть відмічати прийом, щоб побачити статистику",
+    "period7d": "7 днів",
+    "period30d": "30 днів",
+    "periodAll": "Увесь час",
+    "adherencePercent": "{{percent}}%",
+    "taken": "Прийнято",
+    "skipped": "Пропущено",
+    "missed": "Не прийнято",
+    "snoozed": "Відкладено",
+    "scheduled": "Заплановано",
+    "streak": "Поточна серія",
+    "longestStreak": "Найдовша серія",
+    "days": "{{count}} днів",
+    "day": "{{count}} день",
+    "summary": "Підсумок"
+  },
+  "dose": {
+    "take": "Прийняти",
+    "skip": "Пропустити",
+    "snooze": "Відкласти",
+    "taken": "Прийнято",
+    "skipped": "Пропущено",
+    "missed": "Не прийнято",
+    "snoozed": "Відкладено",
+    "scheduled": "Заплановано на {{time}}",
+    "dueNow": "Час прийому",
+    "upcoming": "Заплановані",
+    "completed": "Виконані",
+    "todayProgress": "{{done}} з {{total}} виконано"
   },
   "settings": {
     "title": "Налаштування",
