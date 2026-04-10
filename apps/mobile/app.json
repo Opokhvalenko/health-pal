@@ -25,6 +25,16 @@
       "edgeToEdgeEnabled": true,
       "package": "com.healthpal.app"
     },
-    "plugins": ["expo-router", "expo-sqlite", "@react-native-community/datetimepicker"]
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/"
+        }
+      ]
+    ]
   }
 }

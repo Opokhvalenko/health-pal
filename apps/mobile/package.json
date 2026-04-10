@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@notifee/react-native": "^9.1.8",
     "@react-native-community/datetimepicker": "8.4.4",
+    "@sentry/react-native": "~7.2.0",
     "@shopify/react-native-skia": "^2.6.2",
     "drizzle-orm": "^0.45.2",
     "expo": "~54.0.33",
