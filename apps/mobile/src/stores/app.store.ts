@@ -1,10 +1,12 @@
 import { create } from 'zustand';
+import type { ProfileRole } from '../db';
 import { mmkv } from './mmkv';
 
-interface Profile {
+export interface Profile {
   readonly id: string;
   readonly name: string;
-  readonly role: 'self' | 'caregiver' | 'patient';
+  readonly role: ProfileRole;
+  readonly avatarEmoji: string;
 }
 
 interface AppState {
@@ -15,6 +17,13 @@ interface AppState {
   // Active profile
   activeProfile: Profile | null;
   setActiveProfile: (profile: Profile) => void;
+
+  // All profiles (loaded from SQLite, cached in memory)
+  profiles: Profile[];
+  setProfiles: (profiles: Profile[]) => void;
+  addProfile: (profile: Profile) => void;
+  updateProfile: (id: string, patch: Partial<Omit<Profile, 'id'>>) => void;
+  removeProfile: (id: string) => void;
 
   // Calm mode
   calmMode: boolean;
@@ -35,6 +44,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   isOnboardingDone: false,
   activeProfile: null,
+  profiles: [],
   calmMode: false,
   locale: 'en',
   theme: 'system',
@@ -47,6 +57,29 @@ export const useAppStore = create<AppState>((set) => ({
   setActiveProfile: (profile) => {
     mmkv.setActiveProfileId(profile.id);
     set({ activeProfile: profile });
+  },
+
+  setProfiles: (profiles) => {
+    set({ profiles });
+  },
+
+  addProfile: (profile) => {
+    set((state) => ({ profiles: [...state.profiles, profile] }));
+  },
+
+  updateProfile: (id, patch) => {
+    set((state) => ({
+      profiles: state.profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+      activeProfile:
+        state.activeProfile?.id === id ? { ...state.activeProfile, ...patch } : state.activeProfile,
+    }));
+  },
+
+  removeProfile: (id) => {
+    set((state) => ({
+      profiles: state.profiles.filter((p) => p.id !== id),
+      activeProfile: state.activeProfile?.id === id ? null : state.activeProfile,
+    }));
   },
 
   toggleCalmMode: () => {

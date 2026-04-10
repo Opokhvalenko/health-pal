@@ -1,6 +1,6 @@
-import { MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 
-export const storage = new MMKV({ id: 'healthpal-preferences' });
+export const storage = createMMKV({ id: 'healthpal-preferences' });
 
 const KEYS = {
   ONBOARDING_DONE: 'onboarding_done',
