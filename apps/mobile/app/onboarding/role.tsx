@@ -9,9 +9,8 @@ export default function RoleScreen(): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const selectRole = (_role: Role): void => {
-    // TODO: save role to MMKV / Zustand
-    router.push('/onboarding/profile');
+  const selectRole = (role: Role): void => {
+    router.push({ pathname: '/onboarding/profile', params: { role } });
   };
 
   return (
