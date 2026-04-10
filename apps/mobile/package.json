@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@notifee/react-native": "^9.1.8",
     "@react-native-community/datetimepicker": "8.4.4",
     "@shopify/react-native-skia": "^2.6.2",
     "drizzle-orm": "^0.45.2",

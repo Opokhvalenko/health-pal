@@ -11,9 +11,15 @@ import { CaregiverDashboard } from '../../src/components/CaregiverDashboard';
 import { LoadingView } from '../../src/components/LoadingView';
 import { ProfileSwitcher } from '../../src/components/ProfileSwitcher';
 import { ProgressRing } from '../../src/components/ProgressRing';
-import { doseEventService } from '../../src/db';
+import { doseEventService, medicationService } from '../../src/db';
+import { useNotifications } from '../../src/hooks/useNotifications';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
 import { useTodayDoses } from '../../src/hooks/useTodayDoses';
+import {
+  cancelDoseNotification,
+  scheduleAllNotifications,
+  scheduleSnooze,
+} from '../../src/services/notification.service';
 import { useAppStore } from '../../src/stores';
 
 export default function TodayScreen(): React.JSX.Element {
@@ -22,6 +28,9 @@ export default function TodayScreen(): React.JSX.Element {
   const calmMode = useAppStore((s) => s.calmMode);
   const role = activeProfile?.role;
   const { doses, loading, reload } = useTodayDoses(activeProfile?.id);
+
+  // Initialize notifications and handle foreground events
+  useNotifications(activeProfile?.id, reload);
 
   useFocusEffect(
     useCallback(() => {
@@ -78,6 +87,26 @@ export default function TodayScreen(): React.JSX.Element {
         status: action,
       });
     }
+
+    // Cancel the notification for this dose
+    // Find medicationId from medications list
+    const meds = await medicationService.getAllForProfile(activeProfile.id);
+    const med = meds.find((m) => m.schedule?.id === dose.scheduleId);
+    if (med) {
+      if (action === 'snoozed') {
+        await scheduleSnooze(
+          med.medication.id,
+          med.medication.name,
+          med.medication.dosageValue,
+          med.medication.dosageUnit,
+          dose.scheduleId,
+          dose.scheduledAt.toISOString(),
+          dose.timeStr,
+        );
+      }
+      await cancelDoseNotification(med.medication.id, dose.timeStr);
+    }
+
     await reload();
   };
 
