@@ -26,6 +26,7 @@
     "react-reconciler": "0.31.0"
   },
   "dependencies": {
+    "@notifee/react-native": "^9.1.8",
     "@shopify/react-native-skia": "2.2.12",
     "expo-haptics": "~15.0.8",
     "react": "19.1.0",

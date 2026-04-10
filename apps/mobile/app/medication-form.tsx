@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { MedicationCategory, ScheduleType } from '../src/db';
 import { medicationService } from '../src/db';
+import { scheduleAllNotifications } from '../src/services/notification.service';
 import { useAppStore } from '../src/stores';
 
 const DOSAGE_UNITS = ['mg', 'ml', 'tablet', 'capsule', 'drop', 'puff', 'patch', 'injection'];
@@ -122,6 +123,13 @@ export default function MedicationFormScreen(): React.JSX.Element {
         startDate: today,
       });
     }
+
+    // Reschedule all notifications after medication change
+    if (activeProfile) {
+      const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+      await scheduleAllNotifications(allMeds, activeProfile.id);
+    }
+
     router.back();
   };
 
@@ -133,6 +141,11 @@ export default function MedicationFormScreen(): React.JSX.Element {
         text: t('medications.archive'),
         onPress: async () => {
           await medicationService.archive(medId);
+          // Reschedule notifications (archived med will be excluded)
+          if (activeProfile) {
+            const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+            await scheduleAllNotifications(allMeds, activeProfile.id);
+          }
           router.back();
         },
       },
