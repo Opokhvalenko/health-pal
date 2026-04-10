@@ -79,6 +79,11 @@
       "patch": "пластир",
       "injection": "ін'єкція"
     },
+    "validation": {
+      "nameRequired": "Назва ліків обов'язкова",
+      "dosagePositive": "Дозування має бути більше 0",
+      "intervalRequired": "Вкажіть інтервал годин"
+    },
     "scheduleTypes": {
       "once_daily": "Раз на день",
       "twice_daily": "Двічі на день",

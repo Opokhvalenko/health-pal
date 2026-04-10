@@ -79,6 +79,11 @@
       "patch": "patch",
       "injection": "injection"
     },
+    "validation": {
+      "nameRequired": "Medication name is required",
+      "dosagePositive": "Dosage must be greater than 0",
+      "intervalRequired": "Interval hours is required"
+    },
     "scheduleTypes": {
       "once_daily": "Once daily",
       "twice_daily": "Twice daily",
