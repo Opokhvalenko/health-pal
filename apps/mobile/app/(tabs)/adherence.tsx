@@ -5,9 +5,11 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { AdherenceCalendar } from '../../src/components/AdherenceCalendar';
+import { AnimatedCounter } from '../../src/components/AnimatedCounter';
 import { LoadingView } from '../../src/components/LoadingView';
 import { doseEventService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
@@ -88,20 +90,32 @@ export default function AdherenceScreen(): React.JSX.Element {
         </View>
 
         {/* Big Percentage */}
-        <View
+        <Animated.View
+          key={`percent-${period}`}
+          entering={FadeInUp.duration(400)}
           style={styles.percentCard}
           accessible
           accessibilityLabel={`${summary.adherencePercent}% ${t('adherence.taken')}`}
         >
-          <Text style={styles.percentValue}>{summary.adherencePercent}%</Text>
+          <AnimatedCounter
+            value={summary.adherencePercent}
+            suffix="%"
+            style={styles.percentValue}
+          />
           <Text style={styles.percentLabel}>{t('adherence.taken')}</Text>
-        </View>
+        </Animated.View>
 
         {/* Calendar Heatmap */}
-        <AdherenceCalendar days={calendar.days} weeks={calendar.weeks} />
+        <Animated.View key={`calendar-${period}`} entering={FadeIn.duration(400).delay(100)}>
+          <AdherenceCalendar days={calendar.days} weeks={calendar.weeks} />
+        </Animated.View>
 
         {/* Stats Grid */}
-        <View style={styles.statsGrid}>
+        <Animated.View
+          key={`stats-${period}`}
+          entering={FadeInUp.duration(400).delay(200)}
+          style={styles.statsGrid}
+        >
           <StatBox label={t('adherence.scheduled')} value={summary.totalScheduled} />
           <StatBox label={t('adherence.taken')} value={summary.taken} color="success" />
           {!calmMode && (
@@ -111,20 +125,24 @@ export default function AdherenceScreen(): React.JSX.Element {
             </>
           )}
           <StatBox label={t('adherence.snoozed')} value={summary.snoozed} />
-        </View>
+        </Animated.View>
 
         {/* Streak */}
-        <View style={styles.streakCard}>
+        <Animated.View
+          key={`streak-${period}`}
+          entering={ZoomIn.duration(400).delay(300)}
+          style={styles.streakCard}
+        >
           <View style={styles.streakItem}>
-            <Text style={styles.streakValue}>{streak.currentStreak}</Text>
+            <AnimatedCounter value={streak.currentStreak} style={styles.streakValue} />
             <Text style={styles.streakLabel}>{t('adherence.streak')}</Text>
           </View>
           <View style={styles.streakDivider} />
           <View style={styles.streakItem}>
-            <Text style={styles.streakValue}>{streak.longestStreak}</Text>
+            <AnimatedCounter value={streak.longestStreak} style={styles.streakValue} />
             <Text style={styles.streakLabel}>{t('adherence.longestStreak')}</Text>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,7 +159,12 @@ function StatBox({
 }): React.JSX.Element {
   return (
     <View style={styles.statBox}>
-      <Text style={[styles.statValue, color && styles[`stat_${color}`]]}>{value}</Text>
+      <AnimatedCounter
+        value={value}
+        style={
+          [styles.statValue, color ? styles[`stat_${color}`] : undefined].filter(Boolean) as never
+        }
+      />
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );

@@ -46,6 +46,7 @@ export const medicationSchema = z
     },
   );
 
-export type MedicationFormData = z.infer<typeof medicationSchema>;
+export type MedicationFormInput = z.input<typeof medicationSchema>;
+export type MedicationFormData = z.output<typeof medicationSchema>;
 
 export { CATEGORIES, DOSAGE_UNITS, SCHEDULE_TYPES };

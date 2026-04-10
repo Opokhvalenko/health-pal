@@ -13,6 +13,7 @@ import { useAppStore } from '../src/stores';
 import {
   DOSAGE_UNITS,
   type MedicationFormData,
+  type MedicationFormInput,
   medicationSchema,
   SCHEDULE_TYPES,
 } from '../src/validation/medication.schema';
@@ -39,7 +40,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
     watch,
     reset,
     formState: { errors, isValid },
-  } = useForm<MedicationFormData>({
+  } = useForm<MedicationFormInput, unknown, MedicationFormData>({
     resolver: zodResolver(medicationSchema),
     defaultValues: {
       name: '',
@@ -197,12 +198,13 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const showTimeChips = scheduleType !== 'as_needed' && scheduleType !== 'every_x_hours';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
+          hitSlop={12}
         >
           <Text style={styles.backButton}>‹ {t('common.back')}</Text>
         </Pressable>
@@ -446,7 +448,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
+    paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.md,
   },
   backButton: {

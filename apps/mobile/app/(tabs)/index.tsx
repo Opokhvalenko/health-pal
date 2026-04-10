@@ -4,6 +4,15 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { BigButtonView } from '../../src/components/BigButtonView';
@@ -15,11 +24,7 @@ import { doseEventService, medicationService } from '../../src/db';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
 import { useTodayDoses } from '../../src/hooks/useTodayDoses';
-import {
-  cancelDoseNotification,
-  scheduleAllNotifications,
-  scheduleSnooze,
-} from '../../src/services/notification.service';
+import { cancelDoseNotification, scheduleSnooze } from '../../src/services/notification.service';
 import { useAppStore } from '../../src/stores';
 
 export default function TodayScreen(): React.JSX.Element {
@@ -138,15 +143,20 @@ export default function TodayScreen(): React.JSX.Element {
           {pendingDoses.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t('dose.upcoming')}</Text>
-              {pendingDoses.map((dose) => (
-                <DoseCard
+              {pendingDoses.map((dose, index) => (
+                <Animated.View
                   key={`${dose.scheduleId}-${dose.timeStr}`}
-                  dose={dose}
-                  now={now}
-                  calmMode={calmMode}
-                  t={t}
-                  onAction={handleAction}
-                />
+                  entering={FadeInDown.delay(index * 60).springify()}
+                  layout={LinearTransition.springify()}
+                >
+                  <DoseCard
+                    dose={dose}
+                    now={now}
+                    calmMode={calmMode}
+                    t={t}
+                    onAction={handleAction}
+                  />
+                </Animated.View>
               ))}
             </View>
           )}
@@ -154,8 +164,13 @@ export default function TodayScreen(): React.JSX.Element {
           {completedDoses.length > 0 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t('dose.completed')}</Text>
-              {completedDoses.map((dose) => (
-                <View key={`${dose.scheduleId}-${dose.timeStr}`} style={styles.completedCard}>
+              {completedDoses.map((dose, index) => (
+                <Animated.View
+                  key={`${dose.scheduleId}-${dose.timeStr}`}
+                  entering={FadeIn.delay(index * 40)}
+                  layout={LinearTransition.springify()}
+                  style={styles.completedCard}
+                >
                   <View style={styles.completedInfo}>
                     <Text style={styles.completedName}>{dose.medicationName}</Text>
                     <Text style={styles.completedTime}>{dose.timeStr}</Text>
@@ -169,7 +184,7 @@ export default function TodayScreen(): React.JSX.Element {
                   >
                     {t(`dose.${dose.status}`)}
                   </Text>
-                </View>
+                </Animated.View>
               ))}
             </View>
           )}
@@ -193,6 +208,16 @@ function DoseCard({
   onAction: (dose: TodayDose, action: 'taken' | 'skipped' | 'snoozed') => Promise<void>;
 }): React.JSX.Element {
   const isDue = dose.scheduledAt <= now;
+  const takeScale = useSharedValue(1);
+
+  const takeAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: takeScale.value }],
+  }));
+
+  const handleTakePress = (): void => {
+    takeScale.value = withSequence(withSpring(1.15, { damping: 8 }), withSpring(1, { damping: 8 }));
+    void onAction(dose, 'taken');
+  };
 
   return (
     <View
@@ -210,14 +235,16 @@ function DoseCard({
         </Text>
       </View>
       <View style={styles.doseActions}>
-        <Pressable
-          style={styles.takeButton}
-          onPress={() => void onAction(dose, 'taken')}
-          accessibilityRole="button"
-          accessibilityLabel={`${t('dose.take')} ${dose.medicationName}`}
-        >
-          <Text style={styles.takeText}>{t('dose.take')}</Text>
-        </Pressable>
+        <Animated.View style={takeAnimatedStyle}>
+          <Pressable
+            style={styles.takeButton}
+            onPress={handleTakePress}
+            accessibilityRole="button"
+            accessibilityLabel={`${t('dose.take')} ${dose.medicationName}`}
+          >
+            <Text style={styles.takeText}>{t('dose.take')}</Text>
+          </Pressable>
+        </Animated.View>
         <View style={styles.secondaryActions}>
           <Pressable
             style={styles.skipButton}

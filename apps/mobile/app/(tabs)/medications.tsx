@@ -3,6 +3,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeInRight, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { LoadingView } from '../../src/components/LoadingView';
@@ -67,8 +68,14 @@ export default function MedicationsScreen(): React.JSX.Element {
         {routineMeds.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('medications.routine')}</Text>
-            {routineMeds.map((item) => (
-              <MedicationCard key={item.medication.id} item={item} t={t} />
+            {routineMeds.map((item, index) => (
+              <Animated.View
+                key={item.medication.id}
+                entering={FadeInRight.delay(index * 50).springify()}
+                layout={LinearTransition.springify()}
+              >
+                <MedicationCard item={item} t={t} />
+              </Animated.View>
             ))}
           </View>
         )}
@@ -76,8 +83,14 @@ export default function MedicationsScreen(): React.JSX.Element {
         {asNeededMeds.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('medications.asNeeded')}</Text>
-            {asNeededMeds.map((item) => (
-              <MedicationCard key={item.medication.id} item={item} t={t} />
+            {asNeededMeds.map((item, index) => (
+              <Animated.View
+                key={item.medication.id}
+                entering={FadeInRight.delay(index * 50).springify()}
+                layout={LinearTransition.springify()}
+              >
+                <MedicationCard item={item} t={t} />
+              </Animated.View>
             ))}
           </View>
         )}
