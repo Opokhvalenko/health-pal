@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { BloodType, ProfileRow } from '../src/db';
 import { profileService } from '../src/db';
@@ -70,13 +70,15 @@ export default function ProfileHealthScreen(): React.JSX.Element {
     router.back();
   };
 
+  const insets = useSafeAreaInsets();
+
   if (!profile) {
     return <SafeAreaView style={styles.container} />;
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"

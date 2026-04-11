@@ -111,6 +111,27 @@ export const symptomLogs = sqliteTable('symptom_logs', {
   loggedAt: text('logged_at').notNull(),
 });
 
+// --- Vitals (P5) ---
+
+export const vitals = sqliteTable('vitals', {
+  id: text('id').primaryKey(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profiles.id),
+  /** Vital type: blood_pressure | glucose | temperature | weight | heart_rate | oxygen */
+  type: text('type', {
+    enum: ['blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen'],
+  }).notNull(),
+  /** Primary numeric value (e.g. systolic for BP, value for others) */
+  valueNumeric: real('value_numeric').notNull(),
+  /** Optional secondary value (diastolic for BP) */
+  valueSecondary: real('value_secondary'),
+  /** Unit string (kg, mmHg, °C, mg/dL, %, bpm) */
+  unit: text('unit').notNull(),
+  notes: text('notes'),
+  recordedAt: text('recorded_at').notNull(),
+});
+
 // --- Sync Queue (for R2) ---
 
 export const syncQueue = sqliteTable('sync_queue', {
