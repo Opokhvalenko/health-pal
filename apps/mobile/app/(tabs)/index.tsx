@@ -299,6 +299,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.xxl,
   },
   section: {

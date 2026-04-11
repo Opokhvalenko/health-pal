@@ -78,4 +78,24 @@ export function runMigrations(db: SQLiteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_symptom_logs_profile ON symptom_logs(profile_id);
     CREATE INDEX IF NOT EXISTS idx_sync_queue_synced ON sync_queue(synced);
   `);
+
+  // P1: Profile health basics — additive columns (idempotent via try/catch)
+  addColumnIfMissing(db, 'profiles', 'date_of_birth', 'TEXT');
+  addColumnIfMissing(db, 'profiles', 'weight_kg', 'REAL');
+  addColumnIfMissing(db, 'profiles', 'height_cm', 'REAL');
+  addColumnIfMissing(db, 'profiles', 'blood_type', 'TEXT');
+  addColumnIfMissing(db, 'profiles', 'allergies', 'TEXT');
+  addColumnIfMissing(db, 'profiles', 'chronic_conditions', 'TEXT');
+}
+
+/**
+ * Add a column if it doesn't already exist. SQLite has no
+ * IF NOT EXISTS for ALTER TABLE ADD COLUMN, so we check first.
+ */
+function addColumnIfMissing(db: SQLiteDatabase, table: string, column: string, type: string): void {
+  const result = db.getAllSync<{ name: string }>(`PRAGMA table_info(${table});`);
+  const exists = result.some((col) => col.name === column);
+  if (!exists) {
+    db.execSync(`ALTER TABLE ${table} ADD COLUMN ${column} ${type};`);
+  }
 }

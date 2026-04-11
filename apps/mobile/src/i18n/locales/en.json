@@ -149,6 +149,23 @@
     "about": "About",
     "version": "Version"
   },
+  "profileHealth": {
+    "title": "Health Info",
+    "dateOfBirth": "Date of birth",
+    "dateOfBirthPlaceholder": "Select date",
+    "weight": "Weight (kg)",
+    "weightPlaceholder": "e.g. 70",
+    "height": "Height (cm)",
+    "heightPlaceholder": "e.g. 170",
+    "bloodType": "Blood type",
+    "bloodTypeUnknown": "Unknown",
+    "allergies": "Allergies",
+    "allergiesPlaceholder": "e.g. penicillin, peanuts",
+    "chronicConditions": "Chronic conditions",
+    "chronicConditionsPlaceholder": "e.g. diabetes, hypertension",
+    "commaSeparated": "Separate items with commas",
+    "save": "Save"
+  },
   "profiles": {
     "title": "Profiles",
     "addProfile": "Add Profile",

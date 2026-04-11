@@ -8,6 +8,15 @@ export const profiles = sqliteTable('profiles', {
   role: text('role', { enum: ['self', 'caregiver', 'patient'] }).notNull(),
   avatarEmoji: text('avatar_emoji').default('#4A9B8E'),
   isActive: integer('is_active', { mode: 'boolean' }).default(false),
+  // Health basics (P1)
+  dateOfBirth: text('date_of_birth'),
+  weightKg: real('weight_kg'),
+  heightCm: real('height_cm'),
+  bloodType: text('blood_type'),
+  /** JSON array of allergy strings */
+  allergies: text('allergies'),
+  /** JSON array of chronic condition strings */
+  chronicConditions: text('chronic_conditions'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });

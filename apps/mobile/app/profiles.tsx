@@ -179,6 +179,18 @@ export default function ProfilesScreen(): React.JSX.Element {
             <View style={styles.profileActions}>
               <Pressable
                 style={styles.profileActionButton}
+                onPress={() =>
+                  router.push({
+                    pathname: '/profile-health',
+                    params: { profileId: profile.id },
+                  })
+                }
+                accessibilityLabel={`${t('profileHealth.title')} ${profile.name}`}
+              >
+                <Text style={styles.profileActionText}>♡</Text>
+              </Pressable>
+              <Pressable
+                style={styles.profileActionButton}
                 onPress={() => handleEdit(profile)}
                 accessibilityLabel={`${t('profiles.editProfile')} ${profile.name}`}
               >
