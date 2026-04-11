@@ -79,6 +79,18 @@ export function runMigrations(db: SQLiteDatabase): void {
       changes TEXT NOT NULL DEFAULT '{}'
     );
 
+    CREATE TABLE IF NOT EXISTS treatment_courses (
+      id TEXT PRIMARY KEY NOT NULL,
+      profile_id TEXT NOT NULL REFERENCES profiles(id),
+      title TEXT NOT NULL,
+      reason TEXT,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS doctor_visits (
       id TEXT PRIMARY KEY NOT NULL,
       profile_id TEXT NOT NULL REFERENCES profiles(id),
@@ -117,6 +129,7 @@ export function runMigrations(db: SQLiteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_vitals_profile_type ON vitals(profile_id, type);
     CREATE INDEX IF NOT EXISTS idx_doctor_visits_profile ON doctor_visits(profile_id);
     CREATE INDEX IF NOT EXISTS idx_doctor_visits_date ON doctor_visits(visit_date);
+    CREATE INDEX IF NOT EXISTS idx_treatment_courses_profile ON treatment_courses(profile_id);
   `);
 
   // P1: Profile health basics — additive columns (idempotent via try/catch)
@@ -126,6 +139,12 @@ export function runMigrations(db: SQLiteDatabase): void {
   addColumnIfMissing(db, 'profiles', 'blood_type', 'TEXT');
   addColumnIfMissing(db, 'profiles', 'allergies', 'TEXT');
   addColumnIfMissing(db, 'profiles', 'chronic_conditions', 'TEXT');
+
+  // P4: Treatment courses — link medications to courses
+  addColumnIfMissing(db, 'medications', 'course_id', 'TEXT');
+
+  // Indexes that depend on additive columns must be created after the columns
+  db.execSync(`CREATE INDEX IF NOT EXISTS idx_medications_course ON medications(course_id);`);
 }
 
 /**
