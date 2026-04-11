@@ -13,12 +13,13 @@ export type {
 } from './medication.service';
 export { medicationService } from './medication.service';
 export type {
+  BloodType,
   CreateProfileInput,
   ProfileRole,
   ProfileRow,
   UpdateProfileInput,
 } from './profile.service';
-export { profileService } from './profile.service';
+export { calculateAge, profileService } from './profile.service';
 export * from './schema';
 export type { CreateSymptomInput, SymptomRow } from './symptom.service';
 export { symptomService } from './symptom.service';

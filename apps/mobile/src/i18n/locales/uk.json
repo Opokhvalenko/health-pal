@@ -149,6 +149,23 @@
     "about": "Про додаток",
     "version": "Версія"
   },
+  "profileHealth": {
+    "title": "Дані здоров'я",
+    "dateOfBirth": "Дата народження",
+    "dateOfBirthPlaceholder": "Оберіть дату",
+    "weight": "Вага (кг)",
+    "weightPlaceholder": "наприклад 70",
+    "height": "Зріст (см)",
+    "heightPlaceholder": "наприклад 170",
+    "bloodType": "Група крові",
+    "bloodTypeUnknown": "Невідома",
+    "allergies": "Алергії",
+    "allergiesPlaceholder": "наприклад пеніцилін, арахіс",
+    "chronicConditions": "Хронічні захворювання",
+    "chronicConditionsPlaceholder": "наприклад діабет, гіпертонія",
+    "commaSeparated": "Розділяйте через кому",
+    "save": "Зберегти"
+  },
   "profiles": {
     "title": "Профілі",
     "addProfile": "Додати профіль",
