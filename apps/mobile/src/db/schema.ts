@@ -111,6 +111,32 @@ export const symptomLogs = sqliteTable('symptom_logs', {
   loggedAt: text('logged_at').notNull(),
 });
 
+// --- Doctor Visits (P3) ---
+
+export const doctorVisits = sqliteTable('doctor_visits', {
+  id: text('id').primaryKey(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profiles.id),
+  doctorName: text('doctor_name').notNull(),
+  specialty: text('specialty'),
+  /** ISO date YYYY-MM-DD */
+  visitDate: text('visit_date').notNull(),
+  /** Visit reason / chief complaint */
+  reason: text('reason'),
+  /** Doctor's recommendations after visit */
+  recommendations: text('recommendations'),
+  /** Prescriptions / treatment plan */
+  prescriptions: text('prescriptions'),
+  /** Symptoms snapshot (JSON array of {name, severity}) captured at prep time */
+  symptomsSnapshot: text('symptoms_snapshot'),
+  /** ISO date of next scheduled visit */
+  nextVisitDate: text('next_visit_date'),
+  notes: text('notes'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
 // --- Vitals (P5) ---
 
 export const vitals = sqliteTable('vitals', {

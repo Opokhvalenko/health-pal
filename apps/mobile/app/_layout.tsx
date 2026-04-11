@@ -67,6 +67,8 @@ function RootLayout(): React.JSX.Element | null {
           <Stack.Screen name="symptoms" options={{ presentation: 'modal' }} />
           <Stack.Screen name="vitals" options={{ presentation: 'modal' }} />
           <Stack.Screen name="vital-form" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="doctor-visits" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="doctor-visit-form" options={{ presentation: 'modal' }} />
           <Stack.Screen name="report" options={{ presentation: 'modal' }} />
         </Stack>
       </SafeAreaProvider>
