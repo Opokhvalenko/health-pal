@@ -1,5 +1,12 @@
 export type { Database } from './client';
 export { db } from './client';
+export type {
+  CreateDoctorVisitInput,
+  DoctorVisitRow,
+  SymptomSnapshot,
+  UpdateDoctorVisitInput,
+} from './doctor-visit.service';
+export { doctorVisitService } from './doctor-visit.service';
 export type { DoseEventRow, DoseStatus, LogDoseInput } from './dose-event.service';
 export { doseEventService } from './dose-event.service';
 export type {
