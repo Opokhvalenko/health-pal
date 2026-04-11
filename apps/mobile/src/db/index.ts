@@ -37,5 +37,11 @@ export { calculateAge, profileService } from './profile.service';
 export * from './schema';
 export type { CreateSymptomInput, SymptomRow } from './symptom.service';
 export { symptomService } from './symptom.service';
+export type {
+  CreateTreatmentCourseInput,
+  TreatmentCourseRow,
+  UpdateTreatmentCourseInput,
+} from './treatment-course.service';
+export { treatmentCourseService } from './treatment-course.service';
 export type { CreateVitalInput, VitalRow, VitalType } from './vital.service';
 export { formatVitalValue, VITAL_DEFAULT_UNIT, vitalService } from './vital.service';

@@ -20,6 +20,7 @@ export interface MedicationRow {
   readonly dosageValue: number;
   readonly dosageUnit: string;
   readonly category: MedicationCategory;
+  readonly courseId: string | null;
   readonly notes: string | null;
   readonly isArchived: boolean;
   readonly sortOrder: number;
@@ -51,6 +52,7 @@ export interface CreateMedicationInput {
   readonly dosageValue: number;
   readonly dosageUnit: string;
   readonly category: MedicationCategory;
+  readonly courseId?: string | null;
   readonly notes?: string;
   readonly scheduleType: ScheduleType;
   readonly times: string[];
@@ -64,6 +66,7 @@ export interface UpdateMedicationInput {
   readonly dosageValue?: number;
   readonly dosageUnit?: string;
   readonly category?: MedicationCategory;
+  readonly courseId?: string | null;
   readonly notes?: string | null;
   readonly scheduleType?: ScheduleType;
   readonly times?: string[];
@@ -108,6 +111,7 @@ export const medicationService = {
       dosageValue: input.dosageValue,
       dosageUnit: input.dosageUnit,
       category: input.category,
+      courseId: input.courseId ?? null,
       notes: input.notes ?? null,
       isArchived: false,
       sortOrder: 0,
@@ -136,6 +140,7 @@ export const medicationService = {
         dosageValue: input.dosageValue,
         dosageUnit: input.dosageUnit,
         category: input.category,
+        courseId: input.courseId ?? null,
         notes: input.notes ?? null,
         isArchived: false,
         sortOrder: 0,
@@ -209,6 +214,7 @@ export const medicationService = {
     if (input.dosageValue !== undefined) medValues.dosageValue = input.dosageValue;
     if (input.dosageUnit !== undefined) medValues.dosageUnit = input.dosageUnit;
     if (input.category !== undefined) medValues.category = input.category;
+    if (input.courseId !== undefined) medValues.courseId = input.courseId;
     if (input.notes !== undefined) medValues.notes = input.notes;
     await db.update(medications).set(medValues).where(eq(medications.id, medId));
 
@@ -258,6 +264,7 @@ function normalizeMed(row: {
   dosageValue: number;
   dosageUnit: string;
   category: string | null;
+  courseId?: string | null;
   notes: string | null;
   isArchived: boolean | null;
   sortOrder: number | null;
@@ -271,6 +278,7 @@ function normalizeMed(row: {
     dosageValue: row.dosageValue,
     dosageUnit: row.dosageUnit,
     category: (row.category as MedicationCategory) ?? 'routine',
+    courseId: row.courseId ?? null,
     notes: row.notes,
     isArchived: row.isArchived ?? false,
     sortOrder: row.sortOrder ?? 0,

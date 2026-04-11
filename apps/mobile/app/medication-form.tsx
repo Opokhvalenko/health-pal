@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import { medicationService } from '../src/db';
+import type { TreatmentCourseRow } from '../src/db';
+import { medicationService, treatmentCourseService } from '../src/db';
 import { scheduleAllNotifications } from '../src/services/notification.service';
 import { useAppStore } from '../src/stores';
 import {
@@ -64,13 +65,22 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingTimeIndex, setEditingTimeIndex] = useState<number | null>(null);
   const [changeReason, setChangeReason] = useState('');
+  const [activeCourses, setActiveCourses] = useState<TreatmentCourseRow[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   const loadMedication = useCallback(async (): Promise<void> => {
-    if (!medId || !activeProfile) return;
+    if (!activeProfile) return;
+
+    // Load active treatment courses for the dropdown (always)
+    const courses = await treatmentCourseService.getActive(activeProfile.id);
+    setActiveCourses(courses);
+
+    if (!medId) return;
     const all = await medicationService.getAllForProfile(activeProfile.id);
     const found = all.find((m) => m.medication.id === medId);
     if (!found) return;
     const { medication, schedule } = found;
+    setSelectedCourseId(medication.courseId);
     reset({
       name: medication.name,
       dosageValue: medication.dosageValue,
@@ -151,6 +161,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
         dosageValue: data.dosageValue,
         dosageUnit: data.dosageUnit,
         category: data.category,
+        courseId: selectedCourseId,
         notes: data.notes || null,
         scheduleType: data.scheduleType,
         times: data.times,
@@ -164,6 +175,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
         dosageValue: data.dosageValue,
         dosageUnit: data.dosageUnit,
         category: data.category,
+        courseId: selectedCourseId,
         scheduleType: data.scheduleType,
         times: data.times,
         intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : undefined,
@@ -292,6 +304,41 @@ export default function MedicationFormScreen(): React.JSX.Element {
             </Text>
           </Pressable>
         </View>
+
+        {/* Treatment course (P4) */}
+        {activeCourses.length > 0 && (
+          <>
+            <Text style={styles.label}>{t('medications.treatmentCourse')}</Text>
+            <View style={styles.chipWrap}>
+              <Pressable
+                style={[styles.chip, selectedCourseId === null && styles.chipSelected]}
+                onPress={() => setSelectedCourseId(null)}
+              >
+                <Text
+                  style={[styles.chipText, selectedCourseId === null && styles.chipTextSelected]}
+                >
+                  {t('medications.noCourse')}
+                </Text>
+              </Pressable>
+              {activeCourses.map((course) => (
+                <Pressable
+                  key={course.id}
+                  style={[styles.chip, selectedCourseId === course.id && styles.chipSelected]}
+                  onPress={() => setSelectedCourseId(course.id)}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      selectedCourseId === course.id && styles.chipTextSelected,
+                    ]}
+                  >
+                    {course.title}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </>
+        )}
 
         {/* Schedule Type */}
         <Text style={styles.label}>{t('medications.scheduleType')}</Text>

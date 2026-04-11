@@ -21,6 +21,26 @@ export const profiles = sqliteTable('profiles', {
   updatedAt: text('updated_at').notNull(),
 });
 
+// --- Treatment Courses (P4) ---
+
+export const treatmentCourses = sqliteTable('treatment_courses', {
+  id: text('id').primaryKey(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profiles.id),
+  /** Course title, e.g. "Flu treatment, April 2026" */
+  title: text('title').notNull(),
+  /** Reason / diagnosis */
+  reason: text('reason'),
+  /** ISO date YYYY-MM-DD */
+  startDate: text('start_date').notNull(),
+  /** ISO date — null while course is active */
+  endDate: text('end_date'),
+  notes: text('notes'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
 // --- Medications ---
 
 export const medications = sqliteTable('medications', {
@@ -34,6 +54,8 @@ export const medications = sqliteTable('medications', {
   category: text('category', { enum: ['routine', 'as_needed'] })
     .notNull()
     .default('routine'),
+  /** Optional FK to treatment course (P4) */
+  courseId: text('course_id'),
   notes: text('notes'),
   isArchived: integer('is_archived', { mode: 'boolean' }).default(false),
   sortOrder: integer('sort_order').default(0),
