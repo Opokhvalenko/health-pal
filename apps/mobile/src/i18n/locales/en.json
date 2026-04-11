@@ -84,6 +84,10 @@
       "dosagePositive": "Dosage must be greater than 0",
       "intervalRequired": "Interval hours is required"
     },
+    "changeReason": "Reason for change",
+    "changeReasonHint": "Why are you changing this medication? (optional)",
+    "changeReasonPlaceholder": "e.g. Doctor advised, side effect",
+    "viewHistory": "View change history",
     "scheduleTypes": {
       "once_daily": "Once daily",
       "twice_daily": "Twice daily",
@@ -148,6 +152,20 @@
     "manageProfiles": "Manage Profiles",
     "about": "About",
     "version": "Version"
+  },
+  "medicationHistory": {
+    "title": "Change History",
+    "empty": "No changes yet",
+    "emptyHint": "Edit this medication to start tracking changes",
+    "reason": "Reason",
+    "fields": {
+      "name": "Name",
+      "dosageValue": "Dosage",
+      "dosageUnit": "Unit",
+      "scheduleType": "Frequency",
+      "times": "Times",
+      "intervalHours": "Interval (hours)"
+    }
   },
   "profileHealth": {
     "title": "Health Info",

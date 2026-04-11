@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from './client';
 import { generateId, nowISO } from './helpers';
+import { computeChangesDiff, medicationChangeService } from './medication-change.service';
 import { medications, schedules } from './schema';
 
 export type MedicationCategory = 'routine' | 'as_needed';
@@ -68,6 +69,8 @@ export interface UpdateMedicationInput {
   readonly times?: string[];
   readonly intervalHours?: number | null;
   readonly endDate?: string | null;
+  /** Optional reason for the change (e.g. "Doctor advised", "Side effect") */
+  readonly changeReason?: string;
 }
 
 export const medicationService = {
@@ -157,6 +160,49 @@ export const medicationService = {
   async update(medId: string, input: UpdateMedicationInput): Promise<void> {
     const now = nowISO();
 
+    // Read current state for change diff
+    const medRows = await db.select().from(medications).where(eq(medications.id, medId));
+    const currentMed = medRows[0];
+    const schedRows = await db
+      .select()
+      .from(schedules)
+      .where(eq(schedules.medicationId, medId))
+      .limit(1);
+    const currentSched = schedRows[0];
+
+    // Build "before" snapshot (only for tracked fields)
+    const before: Record<string, unknown> = {};
+    const after: Record<string, unknown> = {};
+
+    if (input.name !== undefined && currentMed) {
+      before.name = currentMed.name;
+      after.name = input.name.trim();
+    }
+    if (input.dosageValue !== undefined && currentMed) {
+      before.dosageValue = currentMed.dosageValue;
+      after.dosageValue = input.dosageValue;
+    }
+    if (input.dosageUnit !== undefined && currentMed) {
+      before.dosageUnit = currentMed.dosageUnit;
+      after.dosageUnit = input.dosageUnit;
+    }
+    if (input.scheduleType !== undefined && currentSched) {
+      before.scheduleType = currentSched.type;
+      after.scheduleType = input.scheduleType;
+    }
+    if (input.times !== undefined && currentSched) {
+      try {
+        before.times = JSON.parse(currentSched.times);
+      } catch {
+        before.times = [];
+      }
+      after.times = input.times;
+    }
+    if (input.intervalHours !== undefined && currentSched) {
+      before.intervalHours = currentSched.intervalHours;
+      after.intervalHours = input.intervalHours;
+    }
+
     // Update medication fields
     const medValues: Record<string, unknown> = { updatedAt: now };
     if (input.name !== undefined) medValues.name = input.name.trim();
@@ -181,6 +227,14 @@ export const medicationService = {
       if (input.endDate !== undefined) schedValues.endDate = input.endDate;
       await db.update(schedules).set(schedValues).where(eq(schedules.medicationId, medId));
     }
+
+    // Log change history
+    const diff = computeChangesDiff(before, after);
+    await medicationChangeService.log({
+      medicationId: medId,
+      changes: diff,
+      reason: input.changeReason,
+    });
   },
 
   async archive(medId: string): Promise<void> {
