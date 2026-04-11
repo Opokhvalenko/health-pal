@@ -13,6 +13,13 @@ export type {
 } from './medication.service';
 export { medicationService } from './medication.service';
 export type {
+  ChangesMap,
+  FieldChange,
+  LogChangeInput,
+  MedicationChangeRow,
+} from './medication-change.service';
+export { medicationChangeService } from './medication-change.service';
+export type {
   BloodType,
   CreateProfileInput,
   ProfileRole,

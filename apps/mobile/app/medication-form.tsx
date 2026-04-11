@@ -63,6 +63,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
 
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingTimeIndex, setEditingTimeIndex] = useState<number | null>(null);
+  const [changeReason, setChangeReason] = useState('');
 
   const loadMedication = useCallback(async (): Promise<void> => {
     if (!medId || !activeProfile) return;
@@ -154,6 +155,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
         scheduleType: data.scheduleType,
         times: data.times,
         intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : null,
+        changeReason: changeReason.trim() || undefined,
       });
     } else {
       await medicationService.create({
@@ -422,6 +424,33 @@ export default function MedicationFormScreen(): React.JSX.Element {
           )}
         />
 
+        {/* Change reason (only when editing) */}
+        {isEditing && (
+          <>
+            <Text style={styles.label}>{t('medications.changeReason')}</Text>
+            <Text style={styles.hint}>{t('medications.changeReasonHint')}</Text>
+            <TextInput
+              style={styles.input}
+              value={changeReason}
+              onChangeText={setChangeReason}
+              placeholder={t('medications.changeReasonPlaceholder')}
+              placeholderTextColor="#B0B0B0"
+            />
+
+            <Pressable
+              style={styles.historyButton}
+              onPress={() =>
+                router.push({
+                  pathname: '/medication-history',
+                  params: { medId: medId ?? '' },
+                })
+              }
+            >
+              <Text style={styles.historyText}>{t('medications.viewHistory')}</Text>
+            </Pressable>
+          </>
+        )}
+
         {/* Save */}
         <Pressable
           style={[styles.saveButton, !isValid && styles.saveButtonDisabled]}
@@ -620,6 +649,21 @@ const styles = StyleSheet.create((theme) => ({
   archiveText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.warning,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  hint: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    marginBottom: theme.spacing.xs,
+  },
+  historyButton: {
+    padding: theme.spacing.md,
+    alignItems: 'center',
+    marginTop: theme.spacing.md,
+  },
+  historyText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.primary,
     fontWeight: theme.fontWeight.semibold,
   },
 }));

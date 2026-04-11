@@ -83,6 +83,21 @@ export const doseEvents = sqliteTable('dose_events', {
   recordedAt: text('recorded_at').notNull(),
 });
 
+// --- Medication Changes (P2) ---
+
+export const medicationChanges = sqliteTable('medication_changes', {
+  id: text('id').primaryKey(),
+  medicationId: text('medication_id')
+    .notNull()
+    .references(() => medications.id),
+  /** ISO timestamp */
+  changedAt: text('changed_at').notNull(),
+  /** Optional reason: doctor advised, side effect, etc. */
+  reason: text('reason'),
+  /** JSON: { field: { from, to } } */
+  changes: text('changes').notNull().default('{}'),
+});
+
 // --- Symptom Logs ---
 
 export const symptomLogs = sqliteTable('symptom_logs', {

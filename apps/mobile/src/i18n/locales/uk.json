@@ -84,6 +84,10 @@
       "dosagePositive": "Дозування має бути більше 0",
       "intervalRequired": "Вкажіть інтервал годин"
     },
+    "changeReason": "Причина зміни",
+    "changeReasonHint": "Чому ви змінюєте ці ліки? (необов'язково)",
+    "changeReasonPlaceholder": "наприклад порада лікаря, побічний ефект",
+    "viewHistory": "Переглянути історію змін",
     "scheduleTypes": {
       "once_daily": "Раз на день",
       "twice_daily": "Двічі на день",
@@ -148,6 +152,20 @@
     "manageProfiles": "Керувати профілями",
     "about": "Про додаток",
     "version": "Версія"
+  },
+  "medicationHistory": {
+    "title": "Історія змін",
+    "empty": "Змін поки немає",
+    "emptyHint": "Відредагуйте ці ліки щоб почати відстежувати зміни",
+    "reason": "Причина",
+    "fields": {
+      "name": "Назва",
+      "dosageValue": "Дозування",
+      "dosageUnit": "Одиниця",
+      "scheduleType": "Частота",
+      "times": "Час",
+      "intervalHours": "Інтервал (годин)"
+    }
   },
   "profileHealth": {
     "title": "Дані здоров'я",

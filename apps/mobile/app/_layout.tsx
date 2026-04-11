@@ -63,6 +63,7 @@ function RootLayout(): React.JSX.Element | null {
           <Stack.Screen name="profiles" options={{ presentation: 'modal' }} />
           <Stack.Screen name="profile-health" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="medication-form" options={{ presentation: 'fullScreenModal' }} />
+          <Stack.Screen name="medication-history" options={{ presentation: 'modal' }} />
           <Stack.Screen name="symptoms" options={{ presentation: 'modal' }} />
           <Stack.Screen name="report" options={{ presentation: 'modal' }} />
         </Stack>

@@ -71,12 +71,21 @@ export function runMigrations(db: SQLiteDatabase): void {
       synced INTEGER DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS medication_changes (
+      id TEXT PRIMARY KEY NOT NULL,
+      medication_id TEXT NOT NULL REFERENCES medications(id),
+      changed_at TEXT NOT NULL,
+      reason TEXT,
+      changes TEXT NOT NULL DEFAULT '{}'
+    );
+
     CREATE INDEX IF NOT EXISTS idx_medications_profile ON medications(profile_id);
     CREATE INDEX IF NOT EXISTS idx_schedules_medication ON schedules(medication_id);
     CREATE INDEX IF NOT EXISTS idx_dose_events_schedule ON dose_events(schedule_id);
     CREATE INDEX IF NOT EXISTS idx_dose_events_profile ON dose_events(profile_id);
     CREATE INDEX IF NOT EXISTS idx_symptom_logs_profile ON symptom_logs(profile_id);
     CREATE INDEX IF NOT EXISTS idx_sync_queue_synced ON sync_queue(synced);
+    CREATE INDEX IF NOT EXISTS idx_medication_changes_medication ON medication_changes(medication_id);
   `);
 
   // P1: Profile health basics — additive columns (idempotent via try/catch)
