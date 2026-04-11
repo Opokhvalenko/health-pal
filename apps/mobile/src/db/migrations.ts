@@ -79,6 +79,17 @@ export function runMigrations(db: SQLiteDatabase): void {
       changes TEXT NOT NULL DEFAULT '{}'
     );
 
+    CREATE TABLE IF NOT EXISTS vitals (
+      id TEXT PRIMARY KEY NOT NULL,
+      profile_id TEXT NOT NULL REFERENCES profiles(id),
+      type TEXT NOT NULL CHECK (type IN ('blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen')),
+      value_numeric REAL NOT NULL,
+      value_secondary REAL,
+      unit TEXT NOT NULL,
+      notes TEXT,
+      recorded_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_medications_profile ON medications(profile_id);
     CREATE INDEX IF NOT EXISTS idx_schedules_medication ON schedules(medication_id);
     CREATE INDEX IF NOT EXISTS idx_dose_events_schedule ON dose_events(schedule_id);
@@ -86,6 +97,8 @@ export function runMigrations(db: SQLiteDatabase): void {
     CREATE INDEX IF NOT EXISTS idx_symptom_logs_profile ON symptom_logs(profile_id);
     CREATE INDEX IF NOT EXISTS idx_sync_queue_synced ON sync_queue(synced);
     CREATE INDEX IF NOT EXISTS idx_medication_changes_medication ON medication_changes(medication_id);
+    CREATE INDEX IF NOT EXISTS idx_vitals_profile ON vitals(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_vitals_profile_type ON vitals(profile_id, type);
   `);
 
   // P1: Profile health basics — additive columns (idempotent via try/catch)

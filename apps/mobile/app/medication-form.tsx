@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { medicationService } from '../src/db';
 import { scheduleAllNotifications } from '../src/services/notification.service';
@@ -199,9 +199,11 @@ export default function MedicationFormScreen(): React.JSX.Element {
 
   const showTimeChips = scheduleType !== 'as_needed' && scheduleType !== 'every_x_hours';
 
+  const insets = useSafeAreaInsets();
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"

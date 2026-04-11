@@ -153,6 +153,30 @@
     "about": "About",
     "version": "Version"
   },
+  "vitals": {
+    "title": "Vitals",
+    "add": "Add Reading",
+    "type": "Type",
+    "value": "Value",
+    "valuePlaceholder": "Enter value",
+    "systolic": "Systolic",
+    "diastolic": "Diastolic",
+    "pulse": "Pulse",
+    "pulseHint": "Optional — most BP monitors show pulse alongside the reading",
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "Any details...",
+    "save": "Save",
+    "delete": "Delete reading",
+    "noReadings": "No readings yet",
+    "types": {
+      "blood_pressure": "Blood Pressure",
+      "glucose": "Glucose",
+      "temperature": "Temperature",
+      "weight": "Weight",
+      "heart_rate": "Heart Rate",
+      "oxygen": "Oxygen Saturation"
+    }
+  },
   "medicationHistory": {
     "title": "Change History",
     "empty": "No changes yet",

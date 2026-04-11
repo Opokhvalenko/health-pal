@@ -121,6 +121,17 @@ export default function SettingsScreen(): React.JSX.Element {
           </Pressable>
           <Pressable
             style={styles.item}
+            onPress={() => router.push('/vitals')}
+            accessibilityRole="button"
+            accessibilityLabel={t('vitals.title')}
+          >
+            <Text style={styles.itemLabel}>{t('vitals.title')}</Text>
+            <Text style={styles.chevron} importantForAccessibility="no">
+              ›
+            </Text>
+          </Pressable>
+          <Pressable
+            style={styles.item}
             onPress={() => router.push('/report')}
             accessibilityRole="button"
             accessibilityLabel={t('report.title')}
