@@ -179,6 +179,19 @@
     "notes": "Notes",
     "notesPlaceholder": "Additional details..."
   },
+  "morningReminder": {
+    "sectionTitle": "Morning Reminder",
+    "enable": "Daily morning reminder",
+    "enableDescription": "Get a morning push at {{time}} listing meds to take with you",
+    "viewPlan": "View today's plan"
+  },
+  "morningPlan": {
+    "title": "Take with you today",
+    "subtitle": "Pack these for the day",
+    "empty": "Nothing to pack",
+    "emptyHint": "No medications scheduled within your work hours",
+    "allPacked": "All set! Have a good day."
+  },
   "doctorVisits": {
     "title": "Doctor Visits",
     "addTitle": "New Visit",

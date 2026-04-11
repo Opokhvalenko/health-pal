@@ -11,6 +11,8 @@ import type { MedicationWithSchedule } from '../db';
 // --- Constants ---
 
 const CHANNEL_ID = 'medication-reminders';
+const MORNING_CHANNEL_ID = 'morning-reminders';
+const MORNING_NOTIFICATION_ID = 'morning-takeout';
 const SNOOZE_MINUTES = 10;
 
 /** Notification ID pattern: med-{medicationId}-{HHmm} */
@@ -29,6 +31,15 @@ async function createChannel(): Promise<void> {
     id: CHANNEL_ID,
     name: 'Medication Reminders',
     importance: AndroidImportance.HIGH,
+    sound: 'default',
+  });
+}
+
+async function createMorningChannel(): Promise<void> {
+  await notifee.createChannel({
+    id: MORNING_CHANNEL_ID,
+    name: 'Morning Take-with-you Reminder',
+    importance: AndroidImportance.DEFAULT,
     sound: 'default',
   });
 }
@@ -201,4 +212,95 @@ export async function setupIOSCategories(): Promise<void> {
       ],
     },
   ]);
+}
+
+// --- Morning take-with-you reminder (P6) ---
+
+interface MorningReminderInput {
+  readonly meds: MedicationWithSchedule[];
+  readonly profileId: string;
+  /** Reminder time in "HH:mm" */
+  readonly reminderTime: string;
+  /** Work hours start "HH:mm" — only doses scheduled at or after this time count */
+  readonly workHoursStart: string;
+  /** Work hours end "HH:mm" — only doses scheduled at or before this time count */
+  readonly workHoursEnd: string;
+}
+
+/**
+ * Build the body of the morning reminder: list of meds to take during the day
+ * within the work hours window.
+ */
+export function buildMorningReminderBody(input: MorningReminderInput): string {
+  const { meds, workHoursStart, workHoursEnd } = input;
+  const items: string[] = [];
+
+  for (const { medication, schedule } of meds) {
+    if (!schedule || schedule.type === 'as_needed' || schedule.paused) continue;
+    if (medication.isArchived) continue;
+
+    const matchingTimes = schedule.times.filter(
+      (time) => time >= workHoursStart && time <= workHoursEnd,
+    );
+    if (matchingTimes.length === 0) continue;
+
+    items.push(
+      `${medication.name} ${medication.dosageValue}${medication.dosageUnit} — ${matchingTimes.join(', ')}`,
+    );
+  }
+
+  return items.join('\n');
+}
+
+/**
+ * Schedule the daily morning reminder notification. Cancels any previous
+ * morning reminder before re-scheduling so settings changes take effect.
+ */
+export async function scheduleMorningReminder(input: MorningReminderInput): Promise<void> {
+  await createMorningChannel();
+  await notifee.cancelNotification(MORNING_NOTIFICATION_ID);
+
+  const body = buildMorningReminderBody(input);
+  if (body.length === 0) return; // nothing to remind about
+
+  // Compute next occurrence of reminderTime
+  const [hh, mm] = input.reminderTime.split(':').map(Number);
+  if (hh === undefined || mm === undefined) return;
+
+  const now = new Date();
+  const next = new Date();
+  next.setHours(hh, mm, 0, 0);
+  if (next.getTime() <= now.getTime()) {
+    next.setDate(next.getDate() + 1);
+  }
+
+  const trigger: TimestampTrigger = {
+    type: TriggerType.TIMESTAMP,
+    timestamp: next.getTime(),
+    repeatFrequency: RepeatFrequency.DAILY,
+  };
+
+  await notifee.createTriggerNotification(
+    {
+      id: MORNING_NOTIFICATION_ID,
+      title: 'Take with you today',
+      body,
+      android: {
+        channelId: MORNING_CHANNEL_ID,
+        pressAction: { id: 'default', launchActivity: 'default' },
+      },
+      ios: {
+        sound: 'default',
+      },
+      data: {
+        type: 'morning-reminder',
+        profileId: input.profileId,
+      },
+    },
+    trigger,
+  );
+}
+
+export async function cancelMorningReminder(): Promise<void> {
+  await notifee.cancelNotification(MORNING_NOTIFICATION_ID);
 }

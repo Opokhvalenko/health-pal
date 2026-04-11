@@ -1,9 +1,16 @@
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
+import { medicationService } from '../../src/db';
+import {
+  cancelMorningReminder,
+  scheduleMorningReminder,
+} from '../../src/services/notification.service';
 import { useAppStore } from '../../src/stores';
+import { mmkv } from '../../src/stores/mmkv';
 
 export default function SettingsScreen(): React.JSX.Element {
   const { t, i18n } = useTranslation();
@@ -34,6 +41,38 @@ export default function SettingsScreen(): React.JSX.Element {
     const next = locale === 'en' ? 'uk' : 'en';
     setLocale(next);
     i18n.changeLanguage(next);
+  };
+
+  // Morning takeout reminder (P6)
+  const activeProfile = useAppStore((s) => s.activeProfile);
+  const [morningEnabled, setMorningEnabled] = useState(mmkv.isMorningReminderEnabled());
+  const [morningTime] = useState(mmkv.getMorningReminderTime());
+
+  useEffect(() => {
+    setMorningEnabled(mmkv.isMorningReminderEnabled());
+  }, []);
+
+  const refreshMorningReminder = async (enabled: boolean): Promise<void> => {
+    if (!activeProfile) return;
+    if (!enabled) {
+      await cancelMorningReminder();
+      return;
+    }
+    const meds = await medicationService.getAllForProfile(activeProfile.id);
+    await scheduleMorningReminder({
+      meds,
+      profileId: activeProfile.id,
+      reminderTime: mmkv.getMorningReminderTime(),
+      workHoursStart: mmkv.getMorningWorkHoursStart(),
+      workHoursEnd: mmkv.getMorningWorkHoursEnd(),
+    });
+  };
+
+  const handleMorningToggle = (): void => {
+    const next = !morningEnabled;
+    setMorningEnabled(next);
+    mmkv.setMorningReminderEnabled(next);
+    void refreshMorningReminder(next);
   };
 
   const themeLabel = (): string => {
@@ -103,6 +142,40 @@ export default function SettingsScreen(): React.JSX.Element {
             <Text style={styles.itemLabel}>{t('settings.language')}</Text>
             <Text style={styles.itemValue}>{locale === 'en' ? 'English' : 'Українська'}</Text>
           </Pressable>
+        </View>
+
+        {/* Morning reminder */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('morningReminder.sectionTitle')}</Text>
+
+          <View style={styles.item}>
+            <View style={styles.itemLabelGroup}>
+              <Text style={styles.itemLabel}>{t('morningReminder.enable')}</Text>
+              <Text style={styles.itemDescription}>
+                {t('morningReminder.enableDescription', { time: morningTime })}
+              </Text>
+            </View>
+            <Switch
+              value={morningEnabled}
+              onValueChange={handleMorningToggle}
+              trackColor={{ true: '#4A9B8E' }}
+              accessibilityLabel={t('morningReminder.enable')}
+            />
+          </View>
+
+          {morningEnabled && (
+            <Pressable
+              style={styles.item}
+              onPress={() => router.push('/morning-plan')}
+              accessibilityRole="button"
+              accessibilityLabel={t('morningReminder.viewPlan')}
+            >
+              <Text style={styles.itemLabel}>{t('morningReminder.viewPlan')}</Text>
+              <Text style={styles.chevron} importantForAccessibility="no">
+                ›
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Health */}

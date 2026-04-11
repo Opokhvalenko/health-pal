@@ -8,6 +8,11 @@ const KEYS = {
   LOCALE: 'locale',
   THEME: 'theme',
   CALM_MODE: 'calm_mode',
+  // Morning takeout reminder (P6)
+  MORNING_REMINDER_ENABLED: 'morning_reminder_enabled',
+  MORNING_REMINDER_TIME: 'morning_reminder_time', // "HH:mm"
+  MORNING_WORK_HOURS_START: 'morning_work_hours_start', // "HH:mm"
+  MORNING_WORK_HOURS_END: 'morning_work_hours_end', // "HH:mm"
 } as const;
 
 export const mmkv = {
@@ -34,4 +39,18 @@ export const mmkv = {
   // Calm mode
   isCalmMode: (): boolean => storage.getBoolean(KEYS.CALM_MODE) ?? false,
   setCalmMode: (value: boolean): void => storage.set(KEYS.CALM_MODE, value),
+
+  // Morning takeout reminder (P6)
+  isMorningReminderEnabled: (): boolean =>
+    storage.getBoolean(KEYS.MORNING_REMINDER_ENABLED) ?? false,
+  setMorningReminderEnabled: (value: boolean): void =>
+    storage.set(KEYS.MORNING_REMINDER_ENABLED, value),
+  getMorningReminderTime: (): string => storage.getString(KEYS.MORNING_REMINDER_TIME) ?? '07:00',
+  setMorningReminderTime: (time: string): void => storage.set(KEYS.MORNING_REMINDER_TIME, time),
+  getMorningWorkHoursStart: (): string =>
+    storage.getString(KEYS.MORNING_WORK_HOURS_START) ?? '07:00',
+  setMorningWorkHoursStart: (time: string): void =>
+    storage.set(KEYS.MORNING_WORK_HOURS_START, time),
+  getMorningWorkHoursEnd: (): string => storage.getString(KEYS.MORNING_WORK_HOURS_END) ?? '22:00',
+  setMorningWorkHoursEnd: (time: string): void => storage.set(KEYS.MORNING_WORK_HOURS_END, time),
 } as const;
