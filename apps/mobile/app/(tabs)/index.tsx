@@ -237,8 +237,9 @@ function DoseCard({
       <View style={styles.doseActions}>
         <Animated.View style={takeAnimatedStyle}>
           <Pressable
-            style={styles.takeButton}
+            style={[styles.takeButton, !isDue && styles.takeButtonDisabled]}
             onPress={handleTakePress}
+            disabled={!isDue}
             accessibilityRole="button"
             accessibilityLabel={`${t('dose.take')} ${dose.medicationName}`}
           >
@@ -247,16 +248,18 @@ function DoseCard({
         </Animated.View>
         <View style={styles.secondaryActions}>
           <Pressable
-            style={styles.skipButton}
+            style={[styles.skipButton, !isDue && styles.skipButtonDisabled]}
             onPress={() => void onAction(dose, 'skipped')}
+            disabled={!isDue}
             accessibilityRole="button"
             accessibilityLabel={`${t('dose.skip')} ${dose.medicationName}`}
           >
             <Text style={styles.skipText}>{t('dose.skip')}</Text>
           </Pressable>
           <Pressable
-            style={styles.skipButton}
+            style={[styles.skipButton, !isDue && styles.skipButtonDisabled]}
             onPress={() => void onAction(dose, 'snoozed')}
+            disabled={!isDue}
             accessibilityRole="button"
             accessibilityLabel={`${t('dose.snooze')} ${dose.medicationName}`}
           >
@@ -361,6 +364,9 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: theme.spacing.lg,
     paddingVertical: theme.spacing.sm,
   },
+  takeButtonDisabled: {
+    opacity: 0.4,
+  },
   takeText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
@@ -375,6 +381,9 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
+  },
+  skipButtonDisabled: {
+    opacity: 0.4,
   },
   skipText: {
     fontSize: theme.fontSize.sm,

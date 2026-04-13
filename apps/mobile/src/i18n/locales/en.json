@@ -28,7 +28,14 @@
     "today": "Today",
     "medications": "Meds",
     "adherence": "Adherence",
+    "health": "Health",
     "settings": "Settings"
+  },
+  "health": {
+    "title": "Health",
+    "tracking": "Tracking",
+    "medical": "Medical",
+    "reports": "Reports"
   },
   "today": {
     "greeting": "Good morning",

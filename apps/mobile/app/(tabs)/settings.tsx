@@ -178,64 +178,13 @@ export default function SettingsScreen(): React.JSX.Element {
           )}
         </View>
 
-        {/* Health */}
+        {/* About */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('symptoms.title')}</Text>
-          <Pressable
-            style={styles.item}
-            onPress={() => router.push('/symptoms')}
-            accessibilityRole="button"
-            accessibilityLabel={t('symptoms.title')}
-          >
-            <Text style={styles.itemLabel}>{t('symptoms.title')}</Text>
-            <Text style={styles.chevron} importantForAccessibility="no">
-              ›
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.item}
-            onPress={() => router.push('/vitals')}
-            accessibilityRole="button"
-            accessibilityLabel={t('vitals.title')}
-          >
-            <Text style={styles.itemLabel}>{t('vitals.title')}</Text>
-            <Text style={styles.chevron} importantForAccessibility="no">
-              ›
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.item}
-            onPress={() => router.push('/doctor-visits')}
-            accessibilityRole="button"
-            accessibilityLabel={t('doctorVisits.title')}
-          >
-            <Text style={styles.itemLabel}>{t('doctorVisits.title')}</Text>
-            <Text style={styles.chevron} importantForAccessibility="no">
-              ›
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.item}
-            onPress={() => router.push('/treatment-courses')}
-            accessibilityRole="button"
-            accessibilityLabel={t('treatmentCourses.title')}
-          >
-            <Text style={styles.itemLabel}>{t('treatmentCourses.title')}</Text>
-            <Text style={styles.chevron} importantForAccessibility="no">
-              ›
-            </Text>
-          </Pressable>
-          <Pressable
-            style={styles.item}
-            onPress={() => router.push('/report')}
-            accessibilityRole="button"
-            accessibilityLabel={t('report.title')}
-          >
-            <Text style={styles.itemLabel}>{t('report.title')}</Text>
-            <Text style={styles.chevron} importantForAccessibility="no">
-              ›
-            </Text>
-          </Pressable>
+          <Text style={styles.sectionTitle}>{t('settings.about')}</Text>
+          <View style={styles.item}>
+            <Text style={styles.itemLabel}>{t('settings.version')}</Text>
+            <Text style={styles.itemValue}>1.0.0</Text>
+          </View>
         </View>
       </ScrollView>
     </View>

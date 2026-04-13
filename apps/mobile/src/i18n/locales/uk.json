@@ -28,7 +28,14 @@
     "today": "Сьогодні",
     "medications": "Ліки",
     "adherence": "Прийом",
-    "settings": "Налаштування"
+    "health": "Здоров'я",
+    "settings": "Налашт."
+  },
+  "health": {
+    "title": "Здоров'я",
+    "tracking": "Відстеження",
+    "medical": "Медичне",
+    "reports": "Звіти"
   },
   "today": {
     "greeting": "Доброго ранку",
