@@ -13,6 +13,7 @@ import { mmkv } from '../src/stores/mmkv';
 
 function RootLayout(): React.JSX.Element | null {
   const [dbReady, setDbReady] = useState(false);
+  const [initError, setInitError] = useState<Error | null>(null);
   const hydrate = useAppStore((s) => s.hydrate);
   const setProfiles = useAppStore((s) => s.setProfiles);
   const setActiveProfile = useAppStore((s) => s.setActiveProfile);
@@ -20,33 +21,43 @@ function RootLayout(): React.JSX.Element | null {
 
   useEffect(() => {
     const init = async (): Promise<void> => {
-      const expoDb = openDatabaseSync('healthpal.db');
-      runMigrations(expoDb);
-      hydrate();
+      try {
+        const expoDb = openDatabaseSync('healthpal.db');
+        runMigrations(expoDb);
+        hydrate();
 
-      // Load profiles from SQLite
-      const rows = await profileService.getAll();
-      const profilesList = rows.map((r) => ({
-        id: r.id,
-        name: r.name,
-        role: r.role,
-        avatarEmoji: r.avatarEmoji,
-      }));
-      setProfiles(profilesList);
+        // Load profiles from SQLite
+        const rows = await profileService.getAll();
+        const profilesList = rows.map((r) => ({
+          id: r.id,
+          name: r.name,
+          role: r.role,
+          avatarEmoji: r.avatarEmoji,
+        }));
+        setProfiles(profilesList);
 
-      // Restore active profile from MMKV
-      const activeId = mmkv.getActiveProfileId();
-      if (activeId) {
-        const active = profilesList.find((p) => p.id === activeId);
-        if (active) {
-          setActiveProfile(active);
+        // Restore active profile from MMKV
+        const activeId = mmkv.getActiveProfileId();
+        if (activeId) {
+          const active = profilesList.find((p) => p.id === activeId);
+          if (active) {
+            setActiveProfile(active);
+          }
         }
-      }
 
-      setDbReady(true);
+        setDbReady(true);
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setInitError(error);
+        Sentry.captureException(error);
+      }
     };
     init();
   }, [hydrate, setProfiles, setActiveProfile]);
+
+  if (initError) {
+    return <ErrorFallback error={initError} resetError={() => setInitError(null)} />;
+  }
 
   if (!dbReady) return null;
 
