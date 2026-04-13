@@ -57,7 +57,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
   });
 
   const scheduleType = watch('scheduleType');
-  const times = watch('times');
+  const times = watch('times') ?? [];
   const dosageUnit = watch('dosageUnit');
   const category = watch('category');
   const intervalHours = watch('intervalHours');
