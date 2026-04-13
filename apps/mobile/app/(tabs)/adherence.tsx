@@ -69,6 +69,7 @@ export default function AdherenceScreen(): React.JSX.Element {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('adherence.title')}</Text>
+        <Text style={styles.subtitle}>{t('adherence.subtitle')}</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -89,7 +90,7 @@ export default function AdherenceScreen(): React.JSX.Element {
           ))}
         </View>
 
-        {/* Big Percentage */}
+        {/* Big Percentage with explanation */}
         <Animated.View
           key={`percent-${period}`}
           entering={FadeInUp.duration(400)}
@@ -103,11 +104,31 @@ export default function AdherenceScreen(): React.JSX.Element {
             style={styles.percentValue}
           />
           <Text style={styles.percentLabel}>{t('adherence.taken')}</Text>
+          <Text style={styles.percentExplanation}>
+            {t('adherence.explanation', {
+              taken: summary.taken,
+              total: summary.totalScheduled,
+            })}
+          </Text>
         </Animated.View>
 
-        {/* Calendar Heatmap */}
-        <Animated.View key={`calendar-${period}`} entering={FadeIn.duration(400).delay(100)}>
-          <AdherenceCalendar days={calendar.days} weeks={calendar.weeks} />
+        {/* Streak — moved up for prominence */}
+        <Animated.View
+          key={`streak-${period}`}
+          entering={ZoomIn.duration(400).delay(100)}
+          style={styles.streakCard}
+        >
+          <View style={styles.streakItem}>
+            <Ionicons name="flame-outline" size={24} color="#E8A87C" />
+            <AnimatedCounter value={streak.currentStreak} style={styles.streakValue} />
+            <Text style={styles.streakLabel}>{t('adherence.streak')}</Text>
+          </View>
+          <View style={styles.streakDivider} />
+          <View style={styles.streakItem}>
+            <Ionicons name="trophy-outline" size={24} color="#F6C065" />
+            <AnimatedCounter value={streak.longestStreak} style={styles.streakValue} />
+            <Text style={styles.streakLabel}>{t('adherence.longestStreak')}</Text>
+          </View>
         </Animated.View>
 
         {/* Stats Grid */}
@@ -116,32 +137,39 @@ export default function AdherenceScreen(): React.JSX.Element {
           entering={FadeInUp.duration(400).delay(200)}
           style={styles.statsGrid}
         >
-          <StatBox label={t('adherence.scheduled')} value={summary.totalScheduled} />
-          <StatBox label={t('adherence.taken')} value={summary.taken} color="success" />
+          <StatBox
+            label={t('adherence.scheduled')}
+            value={summary.totalScheduled}
+            icon="calendar-outline"
+          />
+          <StatBox
+            label={t('adherence.taken')}
+            value={summary.taken}
+            color="success"
+            icon="checkmark-circle-outline"
+          />
           {!calmMode && (
             <>
-              <StatBox label={t('adherence.skipped')} value={summary.skipped} color="warning" />
-              <StatBox label={t('adherence.missed')} value={summary.missed} color="error" />
+              <StatBox
+                label={t('adherence.skipped')}
+                value={summary.skipped}
+                color="warning"
+                icon="close-circle-outline"
+              />
+              <StatBox
+                label={t('adherence.missed')}
+                value={summary.missed}
+                color="error"
+                icon="alert-circle-outline"
+              />
             </>
           )}
-          <StatBox label={t('adherence.snoozed')} value={summary.snoozed} />
+          <StatBox label={t('adherence.snoozed')} value={summary.snoozed} icon="time-outline" />
         </Animated.View>
 
-        {/* Streak */}
-        <Animated.View
-          key={`streak-${period}`}
-          entering={ZoomIn.duration(400).delay(300)}
-          style={styles.streakCard}
-        >
-          <View style={styles.streakItem}>
-            <AnimatedCounter value={streak.currentStreak} style={styles.streakValue} />
-            <Text style={styles.streakLabel}>{t('adherence.streak')}</Text>
-          </View>
-          <View style={styles.streakDivider} />
-          <View style={styles.streakItem}>
-            <AnimatedCounter value={streak.longestStreak} style={styles.streakValue} />
-            <Text style={styles.streakLabel}>{t('adherence.longestStreak')}</Text>
-          </View>
+        {/* Calendar Heatmap */}
+        <Animated.View key={`calendar-${period}`} entering={FadeIn.duration(400).delay(300)}>
+          <AdherenceCalendar days={calendar.days} weeks={calendar.weeks} />
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -152,13 +180,21 @@ function StatBox({
   label,
   value,
   color,
+  icon,
 }: {
   label: string;
   value: number;
   color?: 'success' | 'warning' | 'error';
+  icon: string;
 }): React.JSX.Element {
   return (
     <View style={styles.statBox}>
+      <Ionicons
+        name={icon as 'checkmark-circle-outline'}
+        size={18}
+        color={color ? undefined : '#A0A0A0'}
+        style={color ? styles[`stat_${color}`] : undefined}
+      />
       <AnimatedCounter
         value={value}
         style={
@@ -185,9 +221,23 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text,
   },
+  subtitle: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.xs,
+  },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.xxl,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.sm,
   },
   periodRow: {
     flexDirection: 'row',
@@ -224,7 +274,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: theme.radius.lg,
     padding: theme.spacing.xl,
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   percentValue: {
     fontSize: 56,
@@ -236,38 +286,11 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.textMuted,
     marginTop: theme.spacing.xs,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
-  },
-  statBox: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
-    minWidth: '47%',
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text,
-  },
-  stat_success: {
-    color: theme.colors.success,
-  },
-  stat_warning: {
-    color: theme.colors.warning,
-  },
-  stat_error: {
-    color: theme.colors.error,
-  },
-  statLabel: {
+  percentExplanation: {
     fontSize: theme.fontSize.xs,
-    color: theme.colors.textMuted,
-    marginTop: 2,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.sm,
+    textAlign: 'center',
   },
   streakCard: {
     backgroundColor: theme.colors.surface,
@@ -275,6 +298,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: theme.spacing.md,
   },
   streakItem: {
     flex: 1,
@@ -293,18 +317,48 @@ const styles = StyleSheet.create((theme) => ({
   },
   streakDivider: {
     width: 1,
-    height: 40,
+    height: 50,
     backgroundColor: theme.colors.border,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
+  },
+  statBox: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    minWidth: '47%',
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  statValue: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text,
+  },
+  stat_success: {
+    color: theme.colors.success,
+  },
+  stat_warning: {
+    color: theme.colors.warning,
+  },
+  stat_error: {
+    color: theme.colors.error,
+  },
+  statLabel: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
   },
   empty: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 100,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: theme.spacing.md,
   },
   emptyText: {
     fontSize: theme.fontSize.lg,

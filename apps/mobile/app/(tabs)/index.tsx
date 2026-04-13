@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInDown,
@@ -43,6 +43,13 @@ export default function TodayScreen(): React.JSX.Element {
     }, [reload]),
   );
 
+  const getGreeting = (): string => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return t('today.greetingMorning');
+    if (hour >= 12 && hour < 18) return t('today.greetingAfternoon');
+    return t('today.greetingEvening');
+  };
+
   if (loading) return <TodaySkeleton />;
 
   if (role === 'patient') {
@@ -55,7 +62,7 @@ export default function TodayScreen(): React.JSX.Element {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View>
-              <Text style={styles.greeting}>{t('today.greeting')}</Text>
+              <Text style={styles.greeting}>{getGreeting()}</Text>
               <Text style={styles.title}>{t('today.title')}</Text>
             </View>
             <ProfileSwitcher />
@@ -115,12 +122,40 @@ export default function TodayScreen(): React.JSX.Element {
     await reload();
   };
 
+  const handleChangeStatus = (dose: TodayDose): void => {
+    if (!dose.eventId || !activeProfile) return;
+    Alert.alert(t('dose.changeStatus'), `${dose.medicationName} — ${dose.timeStr}`, [
+      {
+        text: t('dose.taken'),
+        onPress: async () => {
+          await doseEventService.updateStatus(dose.eventId!, 'taken');
+          await reload();
+        },
+      },
+      {
+        text: t('dose.skipped'),
+        onPress: async () => {
+          await doseEventService.updateStatus(dose.eventId!, 'skipped');
+          await reload();
+        },
+      },
+      {
+        text: t('dose.missed'),
+        onPress: async () => {
+          await doseEventService.updateStatus(dose.eventId!, 'missed');
+          await reload();
+        },
+      },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.greeting}>{t('today.greeting')}</Text>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
             <Text style={styles.title}>{t('today.title')}</Text>
           </View>
           <ProfileSwitcher />
@@ -170,7 +205,12 @@ export default function TodayScreen(): React.JSX.Element {
                   entering={FadeIn.delay(index * 40)}
                   layout={LinearTransition.springify()}
                 >
-                  <View style={styles.completedCard}>
+                  <Pressable
+                    style={styles.completedCard}
+                    onPress={() => handleChangeStatus(dose)}
+                    accessibilityRole="button"
+                    accessibilityHint={t('dose.changeStatusHint')}
+                  >
                     <View style={styles.completedInfo}>
                       <Text style={styles.completedName}>{dose.medicationName}</Text>
                       <Text style={styles.completedTime}>{dose.timeStr}</Text>
@@ -180,11 +220,12 @@ export default function TodayScreen(): React.JSX.Element {
                         styles.completedStatus,
                         dose.status === 'skipped' && styles.completedSkipped,
                         dose.status === 'snoozed' && styles.completedSnoozed,
+                        dose.status === 'missed' && styles.completedMissed,
                       ]}
                     >
                       {t(`dose.${dose.status}`)}
                     </Text>
-                  </View>
+                  </Pressable>
                 </Animated.View>
               ))}
             </View>
@@ -422,6 +463,9 @@ const styles = StyleSheet.create((theme) => ({
   },
   completedSnoozed: {
     color: theme.colors.textMuted,
+  },
+  completedMissed: {
+    color: theme.colors.error,
   },
   empty: {
     flex: 1,

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
-import { treatmentCourseService } from '../src/db';
+import { medicationService, treatmentCourseService } from '../src/db';
 import { useAppStore } from '../src/stores';
 
 export default function TreatmentCourseFormScreen(): React.JSX.Element {
@@ -65,10 +65,32 @@ export default function TreatmentCourseFormScreen(): React.JSX.Element {
   };
 
   const handleComplete = async (): Promise<void> => {
-    if (!courseId) return;
+    if (!courseId || !activeProfile) return;
     const today = new Date().toISOString().split('T')[0] ?? '';
     await treatmentCourseService.complete(courseId, today);
     setEndDate(today);
+
+    // Ask if user wants to archive linked medications
+    const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+    const linkedMeds = allMeds.filter((m) => m.medication.courseId === courseId);
+    if (linkedMeds.length > 0) {
+      const medNames = linkedMeds.map((m) => m.medication.name).join(', ');
+      Alert.alert(
+        t('treatmentCourses.archiveMedsTitle'),
+        t('treatmentCourses.archiveMedsConfirm', { meds: medNames }),
+        [
+          { text: t('treatmentCourses.keepMeds'), style: 'cancel' },
+          {
+            text: t('treatmentCourses.archiveMeds'),
+            onPress: async () => {
+              for (const m of linkedMeds) {
+                await medicationService.archive(m.medication.id);
+              }
+            },
+          },
+        ],
+      );
+    }
   };
 
   const handleDelete = (): void => {

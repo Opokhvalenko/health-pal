@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
-const CELL_SIZE = 14;
-const CELL_GAP = 3;
-const CELL_RADIUS = 3;
+const CELL_SIZE = 18;
+const CELL_GAP = 4;
+const CELL_RADIUS = 4;
 const ROWS = 7;
-const LABEL_WIDTH = 24;
+const LABEL_WIDTH = 32;
 
 interface AdherenceCalendarProps {
   readonly days: readonly CalendarDay[];
@@ -38,14 +38,14 @@ function getStatusColor(status: DayStatus, colors: ThemeColors): string {
   }
 }
 
+const DAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): React.JSX.Element {
   const { t } = useTranslation();
   const { theme } = useUnistyles();
 
-  const canvasWidth = LABEL_WIDTH + weeks * (CELL_SIZE + CELL_GAP);
+  const canvasWidth = weeks * (CELL_SIZE + CELL_GAP);
   const canvasHeight = ROWS * (CELL_SIZE + CELL_GAP);
 
   const cells = useMemo(() => {
@@ -58,7 +58,7 @@ export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): Reac
       const col = Math.floor(i / ROWS);
       const row = i % ROWS;
 
-      const x = LABEL_WIDTH + col * (CELL_SIZE + CELL_GAP);
+      const x = col * (CELL_SIZE + CELL_GAP);
       const y = row * (CELL_SIZE + CELL_GAP);
       const color = getStatusColor(day.status, theme.colors);
 
@@ -70,24 +70,22 @@ export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): Reac
 
   return (
     <View style={calendarStyles.container}>
-      <Text style={calendarStyles.sectionTitle}>{t('adherence.calendar')}</Text>
-
       <View style={calendarStyles.canvasWrapper}>
-        {/* Day labels */}
+        {/* Day labels — all 7 days */}
         <View style={calendarStyles.dayLabels}>
           {DAY_KEYS.map((key, i) => (
             <Text key={key} style={[calendarStyles.dayLabel, { height: CELL_SIZE + CELL_GAP }]}>
-              {i % 2 === 0 ? DAY_LABELS[i] : ''}
+              {DAY_LABELS[i]}
             </Text>
           ))}
         </View>
 
         {/* Skia canvas grid */}
-        <Canvas style={{ width: canvasWidth - LABEL_WIDTH, height: canvasHeight }}>
+        <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
           {cells.map((cell) => (
             <RoundedRect
               key={`${cell.x}-${cell.y}`}
-              x={cell.x - LABEL_WIDTH}
+              x={cell.x}
               y={cell.y}
               width={CELL_SIZE}
               height={CELL_SIZE}
@@ -125,25 +123,19 @@ const calendarStyles = StyleSheet.create((theme) => ({
     padding: theme.spacing.md,
     marginBottom: theme.spacing.lg,
   },
-  sectionTitle: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.md,
-  },
   canvasWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   dayLabels: {
     width: LABEL_WIDTH,
-    marginRight: 0,
   },
   dayLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: theme.colors.textMuted,
     textAlignVertical: 'center',
     lineHeight: CELL_SIZE + CELL_GAP,
+    fontWeight: theme.fontWeight.medium,
   },
   legend: {
     flexDirection: 'row',
@@ -160,9 +152,9 @@ const calendarStyles = StyleSheet.create((theme) => ({
     gap: theme.spacing.xs,
   },
   legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 3,
   },
   legendText: {
     fontSize: theme.fontSize.xs,
