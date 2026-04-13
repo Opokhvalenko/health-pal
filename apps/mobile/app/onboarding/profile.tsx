@@ -1,7 +1,8 @@
+import * as Sentry from '@sentry/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { db, profiles } from '../../src/db';
 import { generateId, nowISO } from '../../src/db/helpers';
@@ -12,29 +13,39 @@ export default function ProfileScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const { role = 'self' } = useLocalSearchParams<{ role?: string }>();
   const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const createProfile = async (): Promise<void> => {
-    if (name.trim().length === 0) return;
+    if (name.trim().length === 0 || saving) return;
+    setSaving(true);
 
-    const id = generateId();
-    const now = nowISO();
-    const profileRole = role === 'caregiver' ? 'caregiver' : 'self';
+    try {
+      const id = generateId();
+      const now = nowISO();
+      const profileRole = role === 'caregiver' ? 'caregiver' : 'self';
 
-    await db.insert(profiles).values({
-      id,
-      name: name.trim(),
-      role: profileRole,
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
-    });
+      await db.insert(profiles).values({
+        id,
+        name: name.trim(),
+        role: profileRole,
+        isActive: true,
+        createdAt: now,
+        updatedAt: now,
+      });
 
-    useAppStore
-      .getState()
-      .setActiveProfile({ id, name: name.trim(), role: profileRole, avatarEmoji: '#4A9B8E' });
-    useAppStore.getState().completeOnboarding();
+      useAppStore
+        .getState()
+        .setActiveProfile({ id, name: name.trim(), role: profileRole, avatarEmoji: '#4A9B8E' });
+      useAppStore.getState().completeOnboarding();
 
-    router.replace('/(tabs)');
+      router.replace('/(tabs)');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      Sentry.captureException(err);
+      Alert.alert(t('common.error'), message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -55,11 +66,11 @@ export default function ProfileScreen(): React.JSX.Element {
       />
 
       <Pressable
-        style={[styles.button, name.trim().length === 0 && styles.buttonDisabled]}
+        style={[styles.button, (name.trim().length === 0 || saving) && styles.buttonDisabled]}
         onPress={() => void createProfile()}
-        disabled={name.trim().length === 0}
+        disabled={name.trim().length === 0 || saving}
       >
-        <Text style={styles.buttonText}>{t('onboarding.profile.continue')}</Text>
+        <Text style={styles.buttonText}>{saving ? '...' : t('onboarding.profile.continue')}</Text>
       </Pressable>
     </View>
   );

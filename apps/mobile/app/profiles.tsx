@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,42 +58,53 @@ export default function ProfilesScreen(): React.JSX.Element {
     setShowForm(false);
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (!formName.trim()) return;
+  const [saving, setSaving] = useState(false);
 
-    if (editingId) {
-      await profileService.update(editingId, {
-        name: formName,
-        role: formRole,
-        avatarEmoji: formEmoji,
-      });
-      updateProfileInStore(editingId, {
-        name: formName.trim(),
-        role: formRole,
-        avatarEmoji: formEmoji,
-      });
-      if (activeProfile?.id === editingId) {
-        setActiveProfile({
-          id: editingId,
+  const handleSave = async (): Promise<void> => {
+    if (!formName.trim() || saving) return;
+    setSaving(true);
+
+    try {
+      if (editingId) {
+        await profileService.update(editingId, {
+          name: formName,
+          role: formRole,
+          avatarEmoji: formEmoji,
+        });
+        updateProfileInStore(editingId, {
           name: formName.trim(),
           role: formRole,
           avatarEmoji: formEmoji,
         });
+        if (activeProfile?.id === editingId) {
+          setActiveProfile({
+            id: editingId,
+            name: formName.trim(),
+            role: formRole,
+            avatarEmoji: formEmoji,
+          });
+        }
+      } else {
+        const row = await profileService.create({
+          name: formName,
+          role: formRole,
+          avatarEmoji: formEmoji,
+        });
+        addProfileToStore({
+          id: row.id,
+          name: row.name,
+          role: row.role,
+          avatarEmoji: row.avatarEmoji,
+        });
       }
-    } else {
-      const row = await profileService.create({
-        name: formName,
-        role: formRole,
-        avatarEmoji: formEmoji,
-      });
-      addProfileToStore({
-        id: row.id,
-        name: row.name,
-        role: row.role,
-        avatarEmoji: row.avatarEmoji,
-      });
+      resetForm();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      Sentry.captureException(err);
+      Alert.alert(t('common.error'), message);
+    } finally {
+      setSaving(false);
     }
-    resetForm();
   };
 
   const handleEdit = (profile: {
@@ -265,11 +277,14 @@ export default function ProfilesScreen(): React.JSX.Element {
                 <Text style={styles.cancelText}>{t('profiles.cancel')}</Text>
               </Pressable>
               <Pressable
-                style={[styles.saveButton, !formName.trim() && styles.saveButtonDisabled]}
-                onPress={handleSave}
-                disabled={!formName.trim()}
+                style={[
+                  styles.saveButton,
+                  (!formName.trim() || saving) && styles.saveButtonDisabled,
+                ]}
+                onPress={() => void handleSave()}
+                disabled={!formName.trim() || saving}
               >
-                <Text style={styles.saveText}>{t('profiles.save')}</Text>
+                <Text style={styles.saveText}>{saving ? '...' : t('profiles.save')}</Text>
               </Pressable>
             </View>
 
