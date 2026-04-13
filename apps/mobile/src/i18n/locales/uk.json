@@ -18,7 +18,8 @@
       "caregiverDescription": "Допомагаю рідній людині з прийомом ліків."
     },
     "profile": {
-      "title": "Як їх звати?",
+      "titleSelf": "Як вас звати?",
+      "titleCaregiver": "Як їх звати?",
       "subtitle": "Ви завжди можете змінити це пізніше.",
       "namePlaceholder": "Ім'я",
       "continue": "Продовжити"
