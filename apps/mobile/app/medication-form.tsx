@@ -71,8 +71,8 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const loadMedication = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
 
-    // Load active treatment courses for the dropdown (always)
-    const courses = await treatmentCourseService.getActive(activeProfile.id);
+    // Load all treatment courses for the dropdown
+    const courses = await treatmentCourseService.getForProfile(activeProfile.id);
     setActiveCourses(courses);
 
     if (!medId) return;
@@ -333,6 +333,9 @@ export default function MedicationFormScreen(): React.JSX.Element {
                     ]}
                   >
                     {course.title}
+                    {course.endDate && course.endDate < new Date().toISOString().split('T')[0]!
+                      ? ' ✓'
+                      : ''}
                   </Text>
                 </Pressable>
               ))}
