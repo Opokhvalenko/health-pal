@@ -3,6 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import type { DoseEventRow, MedicationWithSchedule } from '../db';
 import { doseEventService, medicationService } from '../db';
 
+/** Grace period in ms before a pending dose is auto-marked as missed */
+const AUTO_MISS_GRACE_MS = 60 * 60 * 1000; // 1 hour
+
 export interface TodayDose {
   readonly medicationName: string;
   readonly dosageValue: number;
@@ -10,7 +13,7 @@ export interface TodayDose {
   readonly scheduleId: string;
   readonly scheduledAt: Date;
   readonly timeStr: string;
-  readonly status: 'pending' | 'taken' | 'skipped' | 'snoozed';
+  readonly status: 'pending' | 'taken' | 'skipped' | 'snoozed' | 'missed';
   readonly eventId: string | null;
 }
 
@@ -37,7 +40,31 @@ export function useTodayDoses(profileId: string | undefined): UseTodayDosesResul
     ]);
 
     const todayDoses = buildTodayDoses(meds, events);
-    setDoses(todayDoses);
+
+    // Auto-mark missed: pending doses past grace period
+    const now = Date.now();
+    let changed = false;
+    for (const dose of todayDoses) {
+      if (dose.status === 'pending' && dose.scheduledAt.getTime() + AUTO_MISS_GRACE_MS < now) {
+        await doseEventService.logDose({
+          scheduleId: dose.scheduleId,
+          profileId,
+          scheduledAt: dose.scheduledAt.toISOString(),
+          status: 'missed',
+        });
+        changed = true;
+      }
+    }
+
+    // Re-fetch if we auto-missed anything
+    if (changed) {
+      const updatedEvents = await doseEventService.getForProfileToday(profileId);
+      const updatedDoses = buildTodayDoses(meds, updatedEvents);
+      setDoses(updatedDoses);
+    } else {
+      setDoses(todayDoses);
+    }
+
     setLoading(false);
   }, [profileId]);
 

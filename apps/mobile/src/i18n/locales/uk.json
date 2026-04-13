@@ -27,7 +27,7 @@
   "tabs": {
     "today": "Сьогодні",
     "medications": "Ліки",
-    "adherence": "Прийом",
+    "adherence": "Прогрес",
     "health": "Здоров'я",
     "settings": "Налашт."
   },
@@ -38,7 +38,9 @@
     "reports": "Звіти"
   },
   "today": {
-    "greeting": "Доброго ранку",
+    "greetingMorning": "Доброго ранку",
+    "greetingAfternoon": "Доброго дня",
+    "greetingEvening": "Доброго вечора",
     "title": "План на сьогодні",
     "empty": "Ліків ще немає",
     "emptyHint": "Додайте перші ліки, щоб розпочати",
@@ -107,9 +109,11 @@
     }
   },
   "adherence": {
-    "title": "Прийом",
+    "title": "Мій прогрес",
+    "subtitle": "Відстежуйте як добре ви дотримуєтесь плану",
     "empty": "Даних ще немає",
-    "emptyHint": "Почніть відмічати прийом, щоб побачити статистику",
+    "emptyHint": "Почніть відмічати прийом, щоб побачити прогрес",
+    "explanation": "Ви прийняли {{taken}} з {{total}} запланованих доз",
     "period7d": "7 днів",
     "period30d": "30 днів",
     "periodAll": "Увесь час",
@@ -140,7 +144,9 @@
     "dueNow": "Час прийому",
     "upcoming": "Заплановані",
     "completed": "Виконані",
-    "todayProgress": "{{done}} з {{total}} виконано"
+    "todayProgress": "{{done}} з {{total}} виконано",
+    "changeStatus": "Змінити статус",
+    "changeStatusHint": "Натисніть щоб змінити статус дози"
   },
   "settings": {
     "title": "Налаштування",
@@ -172,6 +178,10 @@
     "deleteTitle": "Видалити курс",
     "deleteConfirm": "Видалити цей курс лікування? Ліки прив'язані до нього не видаляться.",
     "markComplete": "Позначити завершеним",
+    "archiveMedsTitle": "Архівувати ліки?",
+    "archiveMedsConfirm": "Архівувати ліки прив'язані до цього курсу? ({{meds}})",
+    "archiveMeds": "Архівувати",
+    "keepMeds": "Залишити активними",
     "active": "Активний",
     "completed": "Завершено",
     "ongoing": "триває",

@@ -27,7 +27,7 @@
   "tabs": {
     "today": "Today",
     "medications": "Meds",
-    "adherence": "Adherence",
+    "adherence": "Progress",
     "health": "Health",
     "settings": "Settings"
   },
@@ -38,7 +38,9 @@
     "reports": "Reports"
   },
   "today": {
-    "greeting": "Good morning",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
     "title": "Today's Plan",
     "empty": "No medications yet",
     "emptyHint": "Add your first medication to get started",
@@ -107,9 +109,11 @@
     }
   },
   "adherence": {
-    "title": "Adherence",
+    "title": "My Progress",
+    "subtitle": "Track how well you follow your medication plan",
     "empty": "No data yet",
-    "emptyHint": "Start logging doses to see your adherence",
+    "emptyHint": "Start logging doses to see your progress",
+    "explanation": "You took {{taken}} of {{total}} scheduled doses",
     "period7d": "7 days",
     "period30d": "30 days",
     "periodAll": "All time",
@@ -140,7 +144,9 @@
     "dueNow": "Due now",
     "upcoming": "Upcoming",
     "completed": "Completed",
-    "todayProgress": "{{done}} of {{total}} done"
+    "todayProgress": "{{done}} of {{total}} done",
+    "changeStatus": "Change status",
+    "changeStatusHint": "Tap to change dose status"
   },
   "settings": {
     "title": "Settings",
@@ -172,6 +178,10 @@
     "deleteTitle": "Delete course",
     "deleteConfirm": "Delete this treatment course? Medications linked to it will not be deleted.",
     "markComplete": "Mark as completed",
+    "archiveMedsTitle": "Archive medications?",
+    "archiveMedsConfirm": "Do you want to archive medications linked to this course? ({{meds}})",
+    "archiveMeds": "Archive",
+    "keepMeds": "Keep active",
     "active": "Active",
     "completed": "Completed",
     "ongoing": "ongoing",
