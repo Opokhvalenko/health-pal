@@ -12,6 +12,7 @@ import { AdherenceCalendar } from '../../src/components/AdherenceCalendar';
 import { AnimatedCounter } from '../../src/components/AnimatedCounter';
 import { AdherenceSkeleton } from '../../src/components/skeletons/AdherenceSkeleton';
 import { doseEventService } from '../../src/db';
+import { safeAsync } from '../../src/helpers/safeAsync';
 import { useAppStore } from '../../src/stores';
 
 export default function AdherenceScreen(): React.JSX.Element {
@@ -24,17 +25,19 @@ export default function AdherenceScreen(): React.JSX.Element {
 
   const loadEvents = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const rows = await doseEventService.getForProfile(activeProfile.id);
-    const mapped: DoseEvent[] = rows.map((r) => ({
-      id: r.id,
-      scheduleId: r.scheduleId,
-      scheduledAt: new Date(r.scheduledAt),
-      status: r.status,
-      recordedAt: new Date(r.recordedAt),
-    }));
-    setEvents(mapped);
+    await safeAsync(async () => {
+      const rows = await doseEventService.getForProfile(activeProfile.id);
+      const mapped: DoseEvent[] = rows.map((r) => ({
+        id: r.id,
+        scheduleId: r.scheduleId,
+        scheduledAt: new Date(r.scheduledAt),
+        status: r.status,
+        recordedAt: new Date(r.recordedAt),
+      }));
+      setEvents(mapped);
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {

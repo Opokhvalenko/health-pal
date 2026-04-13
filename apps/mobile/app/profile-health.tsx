@@ -7,6 +7,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { BloodType, ProfileRow } from '../src/db';
 import { profileService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 
 const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'unknown'];
 
@@ -25,16 +26,18 @@ export default function ProfileHealthScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!profileId) return;
-    const row = await profileService.getById(profileId);
-    if (!row) return;
-    setProfile(row);
-    setDateOfBirth(row.dateOfBirth);
-    setWeight(row.weightKg !== null ? String(row.weightKg) : '');
-    setHeight(row.heightCm !== null ? String(row.heightCm) : '');
-    setBloodType(row.bloodType);
-    setAllergiesText(row.allergies.join(', '));
-    setConditionsText(row.chronicConditions.join(', '));
-  }, [profileId]);
+    await safeAsync(async () => {
+      const row = await profileService.getById(profileId);
+      if (!row) return;
+      setProfile(row);
+      setDateOfBirth(row.dateOfBirth);
+      setWeight(row.weightKg !== null ? String(row.weightKg) : '');
+      setHeight(row.heightCm !== null ? String(row.heightCm) : '');
+      setBloodType(row.bloodType);
+      setAllergiesText(row.allergies.join(', '));
+      setConditionsText(row.chronicConditions.join(', '));
+    }, t('common.error'));
+  }, [profileId, t]);
 
   useEffect(() => {
     load();
@@ -55,19 +58,21 @@ export default function ProfileHealthScreen(): React.JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     if (!profileId) return;
-    const weightNum = weight ? Number(weight) : null;
-    const heightNum = height ? Number(height) : null;
+    await safeAsync(async () => {
+      const weightNum = weight ? Number(weight) : null;
+      const heightNum = height ? Number(height) : null;
 
-    await profileService.update(profileId, {
-      dateOfBirth,
-      weightKg: weightNum !== null && !Number.isNaN(weightNum) ? weightNum : null,
-      heightCm: heightNum !== null && !Number.isNaN(heightNum) ? heightNum : null,
-      bloodType,
-      allergies: parseList(allergiesText),
-      chronicConditions: parseList(conditionsText),
-    });
+      await profileService.update(profileId, {
+        dateOfBirth,
+        weightKg: weightNum !== null && !Number.isNaN(weightNum) ? weightNum : null,
+        heightCm: heightNum !== null && !Number.isNaN(heightNum) ? heightNum : null,
+        bloodType,
+        allergies: parseList(allergiesText),
+        chronicConditions: parseList(conditionsText),
+      });
 
-    router.back();
+      router.back();
+    }, t('common.error'));
   };
 
   const insets = useSafeAreaInsets();

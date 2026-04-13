@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { TreatmentCourseRow } from '../src/db';
 import { treatmentCourseService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 export default function TreatmentCoursesScreen(): React.JSX.Element {
@@ -17,10 +18,12 @@ export default function TreatmentCoursesScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const list = await treatmentCourseService.getForProfile(activeProfile.id);
-    setCourses(list);
+    await safeAsync(async () => {
+      const list = await treatmentCourseService.getForProfile(activeProfile.id);
+      setCourses(list);
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {

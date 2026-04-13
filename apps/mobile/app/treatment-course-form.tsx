@@ -6,6 +6,7 @@ import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'r
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { medicationService, treatmentCourseService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 export default function TreatmentCourseFormScreen(): React.JSX.Element {
@@ -27,14 +28,16 @@ export default function TreatmentCourseFormScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!courseId) return;
-    const course = await treatmentCourseService.getById(courseId);
-    if (!course) return;
-    setTitle(course.title);
-    setReason(course.reason ?? '');
-    setStartDate(course.startDate);
-    setEndDate(course.endDate);
-    setNotes(course.notes ?? '');
-  }, [courseId]);
+    await safeAsync(async () => {
+      const course = await treatmentCourseService.getById(courseId);
+      if (!course) return;
+      setTitle(course.title);
+      setReason(course.reason ?? '');
+      setStartDate(course.startDate);
+      setEndDate(course.endDate);
+      setNotes(course.notes ?? '');
+    }, t('common.error'));
+  }, [courseId, t]);
 
   useEffect(() => {
     load();
@@ -42,55 +45,59 @@ export default function TreatmentCourseFormScreen(): React.JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     if (!activeProfile || !title.trim()) return;
-
-    if (isEditing && courseId) {
-      await treatmentCourseService.update(courseId, {
-        title,
-        reason: reason.trim() || null,
-        startDate,
-        endDate: endDate ?? null,
-        notes: notes.trim() || null,
-      });
-    } else {
-      await treatmentCourseService.create({
-        profileId: activeProfile.id,
-        title,
-        reason: reason.trim() || undefined,
-        startDate,
-        endDate: endDate ?? undefined,
-        notes: notes.trim() || undefined,
-      });
-    }
-    router.back();
+    await safeAsync(async () => {
+      if (isEditing && courseId) {
+        await treatmentCourseService.update(courseId, {
+          title,
+          reason: reason.trim() || null,
+          startDate,
+          endDate: endDate ?? null,
+          notes: notes.trim() || null,
+        });
+      } else {
+        await treatmentCourseService.create({
+          profileId: activeProfile.id,
+          title,
+          reason: reason.trim() || undefined,
+          startDate,
+          endDate: endDate ?? undefined,
+          notes: notes.trim() || undefined,
+        });
+      }
+      router.back();
+    }, t('common.error'));
   };
 
   const handleComplete = async (): Promise<void> => {
     if (!courseId || !activeProfile) return;
-    const today = new Date().toISOString().split('T')[0] ?? '';
-    await treatmentCourseService.complete(courseId, today);
-    setEndDate(today);
+    await safeAsync(async () => {
+      const today = new Date().toISOString().split('T')[0] ?? '';
+      await treatmentCourseService.complete(courseId, today);
+      setEndDate(today);
 
-    // Ask if user wants to archive linked medications
-    const allMeds = await medicationService.getAllForProfile(activeProfile.id);
-    const linkedMeds = allMeds.filter((m) => m.medication.courseId === courseId);
-    if (linkedMeds.length > 0) {
-      const medNames = linkedMeds.map((m) => m.medication.name).join(', ');
-      Alert.alert(
-        t('treatmentCourses.archiveMedsTitle'),
-        t('treatmentCourses.archiveMedsConfirm', { meds: medNames }),
-        [
-          { text: t('treatmentCourses.keepMeds'), style: 'cancel' },
-          {
-            text: t('treatmentCourses.archiveMeds'),
-            onPress: async () => {
-              for (const m of linkedMeds) {
-                await medicationService.archive(m.medication.id);
-              }
+      // Ask if user wants to archive linked medications
+      const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+      const linkedMeds = allMeds.filter((m) => m.medication.courseId === courseId);
+      if (linkedMeds.length > 0) {
+        const medNames = linkedMeds.map((m) => m.medication.name).join(', ');
+        Alert.alert(
+          t('treatmentCourses.archiveMedsTitle'),
+          t('treatmentCourses.archiveMedsConfirm', { meds: medNames }),
+          [
+            { text: t('treatmentCourses.keepMeds'), style: 'cancel' },
+            {
+              text: t('treatmentCourses.archiveMeds'),
+              onPress: () =>
+                void safeAsync(async () => {
+                  for (const m of linkedMeds) {
+                    await medicationService.archive(m.medication.id);
+                  }
+                }, t('common.error')),
             },
-          },
-        ],
-      );
-    }
+          ],
+        );
+      }
+    }, t('common.error'));
   };
 
   const handleDelete = (): void => {
@@ -100,10 +107,11 @@ export default function TreatmentCourseFormScreen(): React.JSX.Element {
       {
         text: t('treatmentCourses.delete'),
         style: 'destructive',
-        onPress: async () => {
-          await treatmentCourseService.remove(courseId);
-          router.back();
-        },
+        onPress: () =>
+          void safeAsync(async () => {
+            await treatmentCourseService.remove(courseId);
+            router.back();
+          }, t('common.error')),
       },
     ]);
   };

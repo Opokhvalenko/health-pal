@@ -21,6 +21,7 @@ import { ProfileSwitcher } from '../../src/components/ProfileSwitcher';
 import { ProgressRing } from '../../src/components/ProgressRing';
 import { TodaySkeleton } from '../../src/components/skeletons/TodaySkeleton';
 import { doseEventService, medicationService } from '../../src/db';
+import { safeAsync } from '../../src/helpers/safeAsync';
 import { useNotifications } from '../../src/hooks/useNotifications';
 import type { TodayDose } from '../../src/hooks/useTodayDoses';
 import { useTodayDoses } from '../../src/hooks/useTodayDoses';
@@ -95,64 +96,51 @@ export default function TodayScreen(): React.JSX.Element {
       action === 'taken' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
     );
 
-    if (dose.eventId) {
-      await doseEventService.updateStatus(dose.eventId, action);
-    } else {
-      await doseEventService.logDose({
-        scheduleId: dose.scheduleId,
-        profileId: activeProfile.id,
-        scheduledAt: dose.scheduledAt.toISOString(),
-        status: action,
-      });
-    }
-
-    // Cancel the notification for this dose
-    // Find medicationId from medications list
-    const meds = await medicationService.getAllForProfile(activeProfile.id);
-    const med = meds.find((m) => m.schedule?.id === dose.scheduleId);
-    if (med) {
-      if (action === 'snoozed') {
-        await scheduleSnooze(
-          med.medication.id,
-          med.medication.name,
-          med.medication.dosageValue,
-          med.medication.dosageUnit,
-          dose.scheduleId,
-          dose.scheduledAt.toISOString(),
-          dose.timeStr,
-        );
+    await safeAsync(async () => {
+      if (dose.eventId) {
+        await doseEventService.updateStatus(dose.eventId, action);
+      } else {
+        await doseEventService.logDose({
+          scheduleId: dose.scheduleId,
+          profileId: activeProfile.id,
+          scheduledAt: dose.scheduledAt.toISOString(),
+          status: action,
+        });
       }
-      await cancelDoseNotification(med.medication.id, dose.timeStr);
-    }
 
-    await reload();
+      const meds = await medicationService.getAllForProfile(activeProfile.id);
+      const med = meds.find((m) => m.schedule?.id === dose.scheduleId);
+      if (med) {
+        if (action === 'snoozed') {
+          await scheduleSnooze(
+            med.medication.id,
+            med.medication.name,
+            med.medication.dosageValue,
+            med.medication.dosageUnit,
+            dose.scheduleId,
+            dose.scheduledAt.toISOString(),
+            dose.timeStr,
+          );
+        }
+        await cancelDoseNotification(med.medication.id, dose.timeStr);
+      }
+
+      await reload();
+    }, t('common.error'));
   };
 
   const handleChangeStatus = (dose: TodayDose): void => {
     const eventId = dose.eventId;
     if (!eventId || !activeProfile) return;
+    const updateStatus = (status: 'taken' | 'skipped' | 'missed') => () =>
+      void safeAsync(async () => {
+        await doseEventService.updateStatus(eventId, status);
+        await reload();
+      }, t('common.error'));
     Alert.alert(t('dose.changeStatus'), `${dose.medicationName} — ${dose.timeStr}`, [
-      {
-        text: t('dose.taken'),
-        onPress: async () => {
-          await doseEventService.updateStatus(eventId, 'taken');
-          await reload();
-        },
-      },
-      {
-        text: t('dose.skipped'),
-        onPress: async () => {
-          await doseEventService.updateStatus(eventId, 'skipped');
-          await reload();
-        },
-      },
-      {
-        text: t('dose.missed'),
-        onPress: async () => {
-          await doseEventService.updateStatus(eventId, 'missed');
-          await reload();
-        },
-      },
+      { text: t('dose.taken'), onPress: updateStatus('taken') },
+      { text: t('dose.skipped'), onPress: updateStatus('skipped') },
+      { text: t('dose.missed'), onPress: updateStatus('missed') },
       { text: t('common.cancel'), style: 'cancel' },
     ]);
   };

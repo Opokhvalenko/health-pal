@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { MedicationWithSchedule } from '../src/db';
 import { medicationService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 import { mmkv } from '../src/stores/mmkv';
 
@@ -27,32 +28,34 @@ export default function MorningPlanScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const meds = await medicationService.getAllForProfile(activeProfile.id);
-    const start = mmkv.getMorningWorkHoursStart();
-    const end = mmkv.getMorningWorkHoursEnd();
+    await safeAsync(async () => {
+      const meds = await medicationService.getAllForProfile(activeProfile.id);
+      const start = mmkv.getMorningWorkHoursStart();
+      const end = mmkv.getMorningWorkHoursEnd();
 
-    const result: PlannedDose[] = [];
-    for (const { medication, schedule } of meds) {
-      if (!schedule || schedule.type === 'as_needed' || schedule.paused) continue;
-      if (medication.isArchived) continue;
+      const result: PlannedDose[] = [];
+      for (const { medication, schedule } of meds) {
+        if (!schedule || schedule.type === 'as_needed' || schedule.paused) continue;
+        if (medication.isArchived) continue;
 
-      for (const time of schedule.times) {
-        if (time >= start && time <= end) {
-          result.push({
-            id: `${medication.id}-${time}`,
-            medicationName: medication.name,
-            dosageValue: medication.dosageValue,
-            dosageUnit: medication.dosageUnit,
-            time,
-          });
+        for (const time of schedule.times) {
+          if (time >= start && time <= end) {
+            result.push({
+              id: `${medication.id}-${time}`,
+              medicationName: medication.name,
+              dosageValue: medication.dosageValue,
+              dosageUnit: medication.dosageUnit,
+              time,
+            });
+          }
         }
       }
-    }
 
-    result.sort((a, b) => a.time.localeCompare(b.time));
-    setDoses(result);
+      result.sort((a, b) => a.time.localeCompare(b.time));
+      setDoses(result);
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {

@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet, UnistylesRuntime } from 'react-native-unistyles';
 import { medicationService } from '../../src/db';
+import { safeAsync } from '../../src/helpers/safeAsync';
 import {
   cancelMorningReminder,
   scheduleMorningReminder,
@@ -54,18 +55,20 @@ export default function SettingsScreen(): React.JSX.Element {
 
   const refreshMorningReminder = async (enabled: boolean): Promise<void> => {
     if (!activeProfile) return;
-    if (!enabled) {
-      await cancelMorningReminder();
-      return;
-    }
-    const meds = await medicationService.getAllForProfile(activeProfile.id);
-    await scheduleMorningReminder({
-      meds,
-      profileId: activeProfile.id,
-      reminderTime: mmkv.getMorningReminderTime(),
-      workHoursStart: mmkv.getMorningWorkHoursStart(),
-      workHoursEnd: mmkv.getMorningWorkHoursEnd(),
-    });
+    await safeAsync(async () => {
+      if (!enabled) {
+        await cancelMorningReminder();
+        return;
+      }
+      const meds = await medicationService.getAllForProfile(activeProfile.id);
+      await scheduleMorningReminder({
+        meds,
+        profileId: activeProfile.id,
+        reminderTime: mmkv.getMorningReminderTime(),
+        workHoursStart: mmkv.getMorningWorkHoursStart(),
+        workHoursEnd: mmkv.getMorningWorkHoursEnd(),
+      });
+    }, t('common.error'));
   };
 
   const handleMorningToggle = (): void => {

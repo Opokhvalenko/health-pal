@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { ChangesMap, MedicationChangeRow, MedicationRow } from '../src/db';
 import { medicationChangeService, medicationService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 export default function MedicationHistoryScreen(): React.JSX.Element {
@@ -19,14 +20,16 @@ export default function MedicationHistoryScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!medId || !activeProfile) return;
-    const allMeds = await medicationService.getAllForProfile(activeProfile.id);
-    const found = allMeds.find((m) => m.medication.id === medId);
-    if (found) setMedication(found.medication);
+    await safeAsync(async () => {
+      const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+      const found = allMeds.find((m) => m.medication.id === medId);
+      if (found) setMedication(found.medication);
 
-    const history = await medicationChangeService.getForMedication(medId);
-    setChanges(history);
+      const history = await medicationChangeService.getForMedication(medId);
+      setChanges(history);
+    }, t('common.error'));
     setLoading(false);
-  }, [medId, activeProfile]);
+  }, [medId, activeProfile, t]);
 
   useEffect(() => {
     load();

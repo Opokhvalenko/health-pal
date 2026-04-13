@@ -6,7 +6,7 @@ import * as schema from './schema';
 export const DB_NAME = 'healthpal.db';
 
 let _expoDb: SQLiteDatabase | null = null;
-let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let _drizzleDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 /**
  * Returns the shared SQLite database handle.
@@ -20,20 +20,20 @@ export function getExpoDb(): SQLiteDatabase {
   return _expoDb;
 }
 
-/**
- * Shared Drizzle ORM instance. Uses the same native connection as getExpoDb().
- */
-export function getDb(): ReturnType<typeof drizzle<typeof schema>> {
-  if (!_db) {
-    _db = drizzle(getExpoDb(), { schema });
+function getDrizzle(): ReturnType<typeof drizzle<typeof schema>> {
+  if (!_drizzleDb) {
+    _drizzleDb = drizzle(getExpoDb(), { schema });
   }
-  return _db;
+  return _drizzleDb;
 }
 
-/** @deprecated Use getDb() — kept for backward compatibility during migration */
+/**
+ * Shared Drizzle ORM instance backed by a lazy singleton SQLite connection.
+ * Safe to import at module top-level — actual DB open is deferred to first use.
+ */
 export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(_target, prop, receiver) {
-    return Reflect.get(getDb(), prop, receiver);
+    return Reflect.get(getDrizzle(), prop, receiver);
   },
 });
 

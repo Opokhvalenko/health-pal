@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { VitalRow, VitalType } from '../src/db';
 import { formatVitalValue, vitalService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 const VITAL_TYPES: VitalType[] = [
@@ -25,16 +26,18 @@ export default function VitalsScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const all = await vitalService.getForProfile(activeProfile.id);
-    const grouped = new Map<VitalType, VitalRow[]>();
-    for (const v of all) {
-      const list = grouped.get(v.type) ?? [];
-      list.push(v);
-      grouped.set(v.type, list);
-    }
-    setVitalsByType(grouped);
+    await safeAsync(async () => {
+      const all = await vitalService.getForProfile(activeProfile.id);
+      const grouped = new Map<VitalType, VitalRow[]>();
+      for (const v of all) {
+        const list = grouped.get(v.type) ?? [];
+        list.push(v);
+        grouped.set(v.type, list);
+      }
+      setVitalsByType(grouped);
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,8 +46,10 @@ export default function VitalsScreen(): React.JSX.Element {
   );
 
   const handleDelete = async (id: string): Promise<void> => {
-    await vitalService.remove(id);
-    await load();
+    await safeAsync(async () => {
+      await vitalService.remove(id);
+      await load();
+    }, t('common.error'));
   };
 
   const insets = useSafeAreaInsets();

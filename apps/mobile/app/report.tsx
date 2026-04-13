@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { buildReportHtml, gatherReportData } from '../src/services/report.service';
 import { useAppStore } from '../src/stores';
 
@@ -18,14 +19,16 @@ export default function ReportScreen(): React.JSX.Element {
   const handleGenerate = async (): Promise<void> => {
     if (!activeProfile) return;
     setGenerating(true);
+    await safeAsync(async () => {
+      const data = await gatherReportData(activeProfile.id, activeProfile.name);
+      const html = buildReportHtml(data);
 
-    const data = await gatherReportData(activeProfile.id, activeProfile.name);
-    const html = buildReportHtml(data);
+      const { uri } = await printToFileAsync({ html, base64: false });
+      setGenerating(false);
 
-    const { uri } = await printToFileAsync({ html, base64: false });
+      await shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
+    }, t('common.error'));
     setGenerating(false);
-
-    await shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
   };
 
   return (

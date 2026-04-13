@@ -7,6 +7,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { SymptomSnapshot } from '../src/db';
 import { doctorVisitService, symptomService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 const SYMPTOM_LOOKBACK_DAYS = 30;
@@ -37,32 +38,33 @@ export default function DoctorVisitFormScreen(): React.JSX.Element {
   // Load visit (if editing) and recent symptoms
   const load = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
+    await safeAsync(async () => {
+      // Load recent symptoms (last 30 days) for prep
+      const allSymptoms = await symptomService.getForProfile(activeProfile.id, 100);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - SYMPTOM_LOOKBACK_DAYS);
+      const recent: SymptomSnapshot[] = allSymptoms
+        .filter((s) => new Date(s.loggedAt) >= cutoff)
+        .map((s) => ({ name: s.name, severity: s.severity, loggedAt: s.loggedAt }));
+      setRecentSymptoms(recent);
 
-    // Load recent symptoms (last 30 days) for prep
-    const allSymptoms = await symptomService.getForProfile(activeProfile.id, 100);
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - SYMPTOM_LOOKBACK_DAYS);
-    const recent: SymptomSnapshot[] = allSymptoms
-      .filter((s) => new Date(s.loggedAt) >= cutoff)
-      .map((s) => ({ name: s.name, severity: s.severity, loggedAt: s.loggedAt }));
-    setRecentSymptoms(recent);
-
-    // Load existing visit if editing
-    if (visitId) {
-      const visit = await doctorVisitService.getById(visitId);
-      if (visit) {
-        setDoctorName(visit.doctorName);
-        setSpecialty(visit.specialty ?? '');
-        setVisitDate(visit.visitDate);
-        setReason(visit.reason ?? '');
-        setRecommendations(visit.recommendations ?? '');
-        setPrescriptions(visit.prescriptions ?? '');
-        setNextVisitDate(visit.nextVisitDate);
-        setNotes(visit.notes ?? '');
-        setSnapshotSaved(visit.symptomsSnapshot);
+      // Load existing visit if editing
+      if (visitId) {
+        const visit = await doctorVisitService.getById(visitId);
+        if (visit) {
+          setDoctorName(visit.doctorName);
+          setSpecialty(visit.specialty ?? '');
+          setVisitDate(visit.visitDate);
+          setReason(visit.reason ?? '');
+          setRecommendations(visit.recommendations ?? '');
+          setPrescriptions(visit.prescriptions ?? '');
+          setNextVisitDate(visit.nextVisitDate);
+          setNotes(visit.notes ?? '');
+          setSnapshotSaved(visit.symptomsSnapshot);
+        }
       }
-    }
-  }, [activeProfile, visitId]);
+    }, t('common.error'));
+  }, [activeProfile, visitId, t]);
 
   useEffect(() => {
     load();
@@ -70,37 +72,38 @@ export default function DoctorVisitFormScreen(): React.JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     if (!activeProfile || !doctorName.trim() || !visitDate) return;
+    await safeAsync(async () => {
+      // Use saved snapshot when editing, otherwise capture current recent symptoms
+      const snapshot = snapshotSaved ?? recentSymptoms;
 
-    // Use saved snapshot when editing, otherwise capture current recent symptoms
-    const snapshot = snapshotSaved ?? recentSymptoms;
-
-    if (isEditing && visitId) {
-      await doctorVisitService.update(visitId, {
-        doctorName,
-        specialty: specialty.trim() || null,
-        visitDate,
-        reason: reason.trim() || null,
-        recommendations: recommendations.trim() || null,
-        prescriptions: prescriptions.trim() || null,
-        nextVisitDate: nextVisitDate ?? null,
-        notes: notes.trim() || null,
-        symptomsSnapshot: snapshot,
-      });
-    } else {
-      await doctorVisitService.create({
-        profileId: activeProfile.id,
-        doctorName,
-        specialty: specialty.trim() || undefined,
-        visitDate,
-        reason: reason.trim() || undefined,
-        recommendations: recommendations.trim() || undefined,
-        prescriptions: prescriptions.trim() || undefined,
-        nextVisitDate: nextVisitDate ?? undefined,
-        notes: notes.trim() || undefined,
-        symptomsSnapshot: snapshot,
-      });
-    }
-    router.back();
+      if (isEditing && visitId) {
+        await doctorVisitService.update(visitId, {
+          doctorName,
+          specialty: specialty.trim() || null,
+          visitDate,
+          reason: reason.trim() || null,
+          recommendations: recommendations.trim() || null,
+          prescriptions: prescriptions.trim() || null,
+          nextVisitDate: nextVisitDate ?? null,
+          notes: notes.trim() || null,
+          symptomsSnapshot: snapshot,
+        });
+      } else {
+        await doctorVisitService.create({
+          profileId: activeProfile.id,
+          doctorName,
+          specialty: specialty.trim() || undefined,
+          visitDate,
+          reason: reason.trim() || undefined,
+          recommendations: recommendations.trim() || undefined,
+          prescriptions: prescriptions.trim() || undefined,
+          nextVisitDate: nextVisitDate ?? undefined,
+          notes: notes.trim() || undefined,
+          symptomsSnapshot: snapshot,
+        });
+      }
+      router.back();
+    }, t('common.error'));
   };
 
   const handleDelete = (): void => {
@@ -110,10 +113,11 @@ export default function DoctorVisitFormScreen(): React.JSX.Element {
       {
         text: t('doctorVisits.delete'),
         style: 'destructive',
-        onPress: async () => {
-          await doctorVisitService.remove(visitId);
-          router.back();
-        },
+        onPress: () =>
+          void safeAsync(async () => {
+            await doctorVisitService.remove(visitId);
+            router.back();
+          }, t('common.error')),
       },
     ]);
   };

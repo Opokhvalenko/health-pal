@@ -9,6 +9,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { MedicationsSkeleton } from '../../src/components/skeletons/MedicationsSkeleton';
 import type { MedicationWithSchedule, TreatmentCourseRow } from '../../src/db';
 import { medicationService, treatmentCourseService } from '../../src/db';
+import { safeAsync } from '../../src/helpers/safeAsync';
 import { useAppStore } from '../../src/stores';
 
 export default function MedicationsScreen(): React.JSX.Element {
@@ -20,14 +21,16 @@ export default function MedicationsScreen(): React.JSX.Element {
 
   const loadMeds = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const [result, allCourses] = await Promise.all([
-      medicationService.getAllForProfile(activeProfile.id),
-      treatmentCourseService.getForProfile(activeProfile.id),
-    ]);
-    setMeds(result);
-    setCourses(new Map(allCourses.map((c) => [c.id, c.title])));
+    await safeAsync(async () => {
+      const [result, allCourses] = await Promise.all([
+        medicationService.getAllForProfile(activeProfile.id),
+        treatmentCourseService.getForProfile(activeProfile.id),
+      ]);
+      setMeds(result);
+      setCourses(new Map(allCourses.map((c) => [c.id, c.title])));
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {
