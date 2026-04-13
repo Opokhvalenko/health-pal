@@ -1,12 +1,12 @@
 import '../src/i18n';
 import * as Sentry from '@sentry/react-native';
 import { Stack } from 'expo-router';
-import { openDatabaseSync } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorFallback } from '../src/components/ErrorFallback';
 import { profileService } from '../src/db';
+import { getExpoDb } from '../src/db/client';
 import { runMigrations } from '../src/db/migrations';
 import { useAppStore } from '../src/stores';
 import { mmkv } from '../src/stores/mmkv';
@@ -22,8 +22,7 @@ function RootLayout(): React.JSX.Element | null {
   useEffect(() => {
     const init = async (): Promise<void> => {
       try {
-        const expoDb = openDatabaseSync('healthpal.db');
-        runMigrations(expoDb);
+        runMigrations(getExpoDb());
         hydrate();
 
         // Load profiles from SQLite
