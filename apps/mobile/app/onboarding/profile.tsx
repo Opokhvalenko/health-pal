@@ -2,7 +2,15 @@ import * as Sentry from '@sentry/react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 import { db, profiles } from '../../src/db';
 import { generateId, nowISO } from '../../src/db/helpers';
@@ -49,9 +57,18 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>{t('onboarding.profile.title')}</Text>
+        <Text style={styles.title}>
+          {t(
+            role === 'caregiver'
+              ? 'onboarding.profile.titleCaregiver'
+              : 'onboarding.profile.titleSelf',
+          )}
+        </Text>
         <Text style={styles.subtitle}>{t('onboarding.profile.subtitle')}</Text>
       </View>
 
@@ -72,7 +89,7 @@ export default function ProfileScreen(): React.JSX.Element {
       >
         <Text style={styles.buttonText}>{saving ? '...' : t('onboarding.profile.continue')}</Text>
       </Pressable>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

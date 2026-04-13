@@ -18,7 +18,8 @@
       "caregiverDescription": "I help a family member or loved one manage their medications."
     },
     "profile": {
-      "title": "What's their name?",
+      "titleSelf": "What's your name?",
+      "titleCaregiver": "What's their name?",
       "subtitle": "You can always change this later.",
       "namePlaceholder": "Name",
       "continue": "Continue"

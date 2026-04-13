@@ -25,6 +25,7 @@ export const mmkv = {
   setActiveProfileId: (id: string): void => storage.set(KEYS.ACTIVE_PROFILE_ID, id),
 
   // Locale
+  getSavedLocale: (): string | undefined => storage.getString(KEYS.LOCALE),
   getLocale: (): string => storage.getString(KEYS.LOCALE) ?? 'en',
   setLocale: (locale: string): void => storage.set(KEYS.LOCALE, locale),
 
