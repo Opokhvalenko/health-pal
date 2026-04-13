@@ -9,6 +9,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { TreatmentCourseRow } from '../src/db';
 import { medicationService, treatmentCourseService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { scheduleAllNotifications } from '../src/services/notification.service';
 import { useAppStore } from '../src/stores';
 import {
@@ -71,27 +72,29 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const loadMedication = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
 
-    // Load all treatment courses for the dropdown
-    const courses = await treatmentCourseService.getForProfile(activeProfile.id);
-    setActiveCourses(courses);
+    await safeAsync(async () => {
+      // Load all treatment courses for the dropdown
+      const courses = await treatmentCourseService.getForProfile(activeProfile.id);
+      setActiveCourses(courses);
 
-    if (!medId) return;
-    const all = await medicationService.getAllForProfile(activeProfile.id);
-    const found = all.find((m) => m.medication.id === medId);
-    if (!found) return;
-    const { medication, schedule } = found;
-    setSelectedCourseId(medication.courseId);
-    reset({
-      name: medication.name,
-      dosageValue: medication.dosageValue,
-      dosageUnit: medication.dosageUnit as MedicationFormData['dosageUnit'],
-      category: medication.category as MedicationFormData['category'],
-      scheduleType: (schedule?.type as MedicationFormData['scheduleType']) ?? 'once_daily',
-      times: schedule?.times ?? ['08:00'],
-      intervalHours: schedule?.intervalHours ?? 8,
-      notes: medication.notes ?? '',
-    });
-  }, [medId, activeProfile, reset]);
+      if (!medId) return;
+      const all = await medicationService.getAllForProfile(activeProfile.id);
+      const found = all.find((m) => m.medication.id === medId);
+      if (!found) return;
+      const { medication, schedule } = found;
+      setSelectedCourseId(medication.courseId);
+      reset({
+        name: medication.name,
+        dosageValue: medication.dosageValue,
+        dosageUnit: medication.dosageUnit as MedicationFormData['dosageUnit'],
+        category: medication.category as MedicationFormData['category'],
+        scheduleType: (schedule?.type as MedicationFormData['scheduleType']) ?? 'once_daily',
+        times: schedule?.times ?? ['08:00'],
+        intervalHours: schedule?.intervalHours ?? 8,
+        notes: medication.notes ?? '',
+      });
+    }, t('common.error'));
+  }, [medId, activeProfile, reset, t]);
 
   useEffect(() => {
     loadMedication();
@@ -127,7 +130,7 @@ export default function MedicationFormScreen(): React.JSX.Element {
     const timeStr = `${hh}:${mm}`;
 
     if (editingTimeIndex !== null) {
-      const updated = times.map((t, i) => (i === editingTimeIndex ? timeStr : t));
+      const updated = times.map((existing, i) => (i === editingTimeIndex ? timeStr : existing));
       setValue('times', updated);
     } else {
       setValue('times', [...times, timeStr].sort());
@@ -153,42 +156,44 @@ export default function MedicationFormScreen(): React.JSX.Element {
   const onSubmit = async (data: MedicationFormData): Promise<void> => {
     if (!activeProfile) return;
 
-    const today = new Date().toISOString().split('T')[0] ?? '';
+    await safeAsync(async () => {
+      const today = new Date().toISOString().split('T')[0] ?? '';
 
-    if (isEditing && medId) {
-      await medicationService.update(medId, {
-        name: data.name,
-        dosageValue: data.dosageValue,
-        dosageUnit: data.dosageUnit,
-        category: data.category,
-        courseId: selectedCourseId,
-        notes: data.notes || null,
-        scheduleType: data.scheduleType,
-        times: data.times,
-        intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : null,
-        changeReason: changeReason.trim() || undefined,
-      });
-    } else {
-      await medicationService.create({
-        profileId: activeProfile.id,
-        name: data.name,
-        dosageValue: data.dosageValue,
-        dosageUnit: data.dosageUnit,
-        category: data.category,
-        courseId: selectedCourseId,
-        scheduleType: data.scheduleType,
-        times: data.times,
-        intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : undefined,
-        startDate: today,
-        notes: data.notes || undefined,
-      });
-    }
+      if (isEditing && medId) {
+        await medicationService.update(medId, {
+          name: data.name,
+          dosageValue: data.dosageValue,
+          dosageUnit: data.dosageUnit,
+          category: data.category,
+          courseId: selectedCourseId,
+          notes: data.notes || null,
+          scheduleType: data.scheduleType,
+          times: data.times,
+          intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : null,
+          changeReason: changeReason.trim() || undefined,
+        });
+      } else {
+        await medicationService.create({
+          profileId: activeProfile.id,
+          name: data.name,
+          dosageValue: data.dosageValue,
+          dosageUnit: data.dosageUnit,
+          category: data.category,
+          courseId: selectedCourseId,
+          scheduleType: data.scheduleType,
+          times: data.times,
+          intervalHours: data.scheduleType === 'every_x_hours' ? data.intervalHours : undefined,
+          startDate: today,
+          notes: data.notes || undefined,
+        });
+      }
 
-    // Reschedule all notifications after medication change
-    const allMeds = await medicationService.getAllForProfile(activeProfile.id);
-    await scheduleAllNotifications(allMeds, activeProfile.id);
+      // Reschedule all notifications after medication change
+      const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+      await scheduleAllNotifications(allMeds, activeProfile.id);
 
-    router.back();
+      router.back();
+    }, t('common.error'));
   };
 
   const handleArchive = (): void => {
@@ -197,14 +202,15 @@ export default function MedicationFormScreen(): React.JSX.Element {
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('medications.archive'),
-        onPress: async () => {
-          await medicationService.archive(medId);
-          if (activeProfile) {
-            const allMeds = await medicationService.getAllForProfile(activeProfile.id);
-            await scheduleAllNotifications(allMeds, activeProfile.id);
-          }
-          router.back();
-        },
+        onPress: () =>
+          void safeAsync(async () => {
+            await medicationService.archive(medId);
+            if (activeProfile) {
+              const allMeds = await medicationService.getAllForProfile(activeProfile.id);
+              await scheduleAllNotifications(allMeds, activeProfile.id);
+            }
+            router.back();
+          }, t('common.error')),
       },
     ]);
   };

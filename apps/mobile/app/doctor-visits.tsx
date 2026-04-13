@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { DoctorVisitRow } from '../src/db';
 import { doctorVisitService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 export default function DoctorVisitsScreen(): React.JSX.Element {
@@ -18,14 +19,16 @@ export default function DoctorVisitsScreen(): React.JSX.Element {
 
   const load = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const [list, next] = await Promise.all([
-      doctorVisitService.getForProfile(activeProfile.id),
-      doctorVisitService.getUpcoming(activeProfile.id),
-    ]);
-    setVisits(list);
-    setUpcoming(next);
+    await safeAsync(async () => {
+      const [list, next] = await Promise.all([
+        doctorVisitService.getForProfile(activeProfile.id),
+        doctorVisitService.getUpcoming(activeProfile.id),
+      ]);
+      setVisits(list);
+      setUpcoming(next);
+    }, t('common.error'));
     setLoading(false);
-  }, [activeProfile]);
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {

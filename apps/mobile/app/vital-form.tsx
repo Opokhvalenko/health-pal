@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StyleSheet } from 'react-native-unistyles';
 import type { VitalType } from '../src/db';
 import { VITAL_DEFAULT_UNIT, vitalService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 const VITAL_TYPES: VitalType[] = [
@@ -35,31 +36,32 @@ export default function VitalFormScreen(): React.JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     if (!activeProfile || !canSave) return;
+    await safeAsync(async () => {
+      const recordedAt = new Date().toISOString();
 
-    const recordedAt = new Date().toISOString();
-
-    await vitalService.create({
-      profileId: activeProfile.id,
-      type,
-      valueNumeric: Number(value),
-      valueSecondary: isBP ? Number(valueSecondary) : undefined,
-      unit,
-      notes: notes.trim() || undefined,
-      recordedAt,
-    });
-
-    // Auto-create paired heart_rate reading when measuring BP with pulse
-    if (isBP && Number(pulse) > 0) {
       await vitalService.create({
         profileId: activeProfile.id,
-        type: 'heart_rate',
-        valueNumeric: Number(pulse),
-        unit: VITAL_DEFAULT_UNIT.heart_rate,
+        type,
+        valueNumeric: Number(value),
+        valueSecondary: isBP ? Number(valueSecondary) : undefined,
+        unit,
+        notes: notes.trim() || undefined,
         recordedAt,
       });
-    }
 
-    router.back();
+      // Auto-create paired heart_rate reading when measuring BP with pulse
+      if (isBP && Number(pulse) > 0) {
+        await vitalService.create({
+          profileId: activeProfile.id,
+          type: 'heart_rate',
+          valueNumeric: Number(pulse),
+          unit: VITAL_DEFAULT_UNIT.heart_rate,
+          recordedAt,
+        });
+      }
+
+      router.back();
+    }, t('common.error'));
   };
 
   const insets = useSafeAreaInsets();

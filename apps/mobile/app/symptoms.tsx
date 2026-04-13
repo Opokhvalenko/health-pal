@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { SymptomRow } from '../src/db';
 import { symptomService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 const SEVERITY_COLORS = [
@@ -33,9 +34,11 @@ export default function SymptomsScreen(): React.JSX.Element {
 
   const loadSymptoms = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const rows = await symptomService.getForProfile(activeProfile.id);
-    setSymptoms(rows);
-  }, [activeProfile]);
+    await safeAsync(async () => {
+      const rows = await symptomService.getForProfile(activeProfile.id);
+      setSymptoms(rows);
+    }, t('common.error'));
+  }, [activeProfile, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -45,17 +48,19 @@ export default function SymptomsScreen(): React.JSX.Element {
 
   const handleSave = async (): Promise<void> => {
     if (!name.trim() || !activeProfile) return;
-    await symptomService.create({
-      profileId: activeProfile.id,
-      name: name.trim(),
-      severity,
-      note: note.trim() || undefined,
-    });
-    setName('');
-    setSeverity(5);
-    setNote('');
-    setShowForm(false);
-    await loadSymptoms();
+    await safeAsync(async () => {
+      await symptomService.create({
+        profileId: activeProfile.id,
+        name: name.trim(),
+        severity,
+        note: note.trim() || undefined,
+      });
+      setName('');
+      setSeverity(5);
+      setNote('');
+      setShowForm(false);
+      await loadSymptoms();
+    }, t('common.error'));
   };
 
   const handleDelete = (id: string): void => {
@@ -64,10 +69,11 @@ export default function SymptomsScreen(): React.JSX.Element {
       {
         text: t('symptoms.delete'),
         style: 'destructive',
-        onPress: async () => {
-          await symptomService.remove(id);
-          await loadSymptoms();
-        },
+        onPress: () =>
+          void safeAsync(async () => {
+            await symptomService.remove(id);
+            await loadSymptoms();
+          }, t('common.error')),
       },
     ]);
   };

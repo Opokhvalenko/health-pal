@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { ProfileRole } from '../src/db';
 import { profileService } from '../src/db';
+import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
 const COLOR_OPTIONS = [
@@ -67,7 +68,7 @@ export default function ProfilesScreen(): React.JSX.Element {
     try {
       if (editingId) {
         await profileService.update(editingId, {
-          name: formName,
+          name: formName.trim(),
           role: formRole,
           avatarEmoji: formEmoji,
         });
@@ -131,18 +132,19 @@ export default function ProfilesScreen(): React.JSX.Element {
       {
         text: t('profiles.delete'),
         style: 'destructive',
-        onPress: async () => {
-          await profileService.remove(id);
-          removeProfileFromStore(id);
-          resetForm();
+        onPress: () =>
+          void safeAsync(async () => {
+            await profileService.remove(id);
+            removeProfileFromStore(id);
+            resetForm();
 
-          if (activeProfile?.id === id) {
-            const remaining = profiles.filter((p) => p.id !== id);
-            if (remaining[0]) {
-              setActiveProfile(remaining[0]);
+            if (activeProfile?.id === id) {
+              const remaining = profiles.filter((p) => p.id !== id);
+              if (remaining[0]) {
+                setActiveProfile(remaining[0]);
+              }
             }
-          }
-        },
+          }, t('common.error')),
       },
     ]);
   };
@@ -153,8 +155,10 @@ export default function ProfilesScreen(): React.JSX.Element {
     role: ProfileRole;
     avatarEmoji: string;
   }): Promise<void> => {
-    await profileService.setActive(profile.id);
-    setActiveProfile(profile);
+    await safeAsync(async () => {
+      await profileService.setActive(profile.id);
+      setActiveProfile(profile);
+    }, t('common.error'));
   };
 
   return (
