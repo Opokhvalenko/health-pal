@@ -35,6 +35,12 @@
           "url": "https://sentry.io/"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6f20b65a-9be5-4e62-a248-d68215cb27e3"
+      }
+    }
   }
 }
