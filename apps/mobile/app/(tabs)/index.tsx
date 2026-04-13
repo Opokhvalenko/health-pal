@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, {
@@ -43,8 +43,15 @@ export default function TodayScreen(): React.JSX.Element {
     }, [reload]),
   );
 
+  // Auto-refresh current time every 60s so "isDue" updates without manual interaction
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+
   const getGreeting = (): string => {
-    const hour = new Date().getHours();
+    const hour = now.getHours();
     if (hour >= 5 && hour < 12) return t('today.greetingMorning');
     if (hour >= 12 && hour < 18) return t('today.greetingAfternoon');
     return t('today.greetingEvening');
@@ -73,7 +80,6 @@ export default function TodayScreen(): React.JSX.Element {
     );
   }
 
-  const now = new Date();
   const pendingDoses = doses.filter((d) => d.status === 'pending');
   const completedDoses = doses.filter((d) => d.status !== 'pending');
   const doneCount = completedDoses.length;
@@ -123,26 +129,27 @@ export default function TodayScreen(): React.JSX.Element {
   };
 
   const handleChangeStatus = (dose: TodayDose): void => {
-    if (!dose.eventId || !activeProfile) return;
+    const eventId = dose.eventId;
+    if (!eventId || !activeProfile) return;
     Alert.alert(t('dose.changeStatus'), `${dose.medicationName} — ${dose.timeStr}`, [
       {
         text: t('dose.taken'),
         onPress: async () => {
-          await doseEventService.updateStatus(dose.eventId!, 'taken');
+          await doseEventService.updateStatus(eventId, 'taken');
           await reload();
         },
       },
       {
         text: t('dose.skipped'),
         onPress: async () => {
-          await doseEventService.updateStatus(dose.eventId!, 'skipped');
+          await doseEventService.updateStatus(eventId, 'skipped');
           await reload();
         },
       },
       {
         text: t('dose.missed'),
         onPress: async () => {
-          await doseEventService.updateStatus(dose.eventId!, 'missed');
+          await doseEventService.updateStatus(eventId, 'missed');
           await reload();
         },
       },

@@ -1,4 +1,4 @@
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import { db } from './client';
 import { generateId, nowISO } from './helpers';
 import { doseEvents } from './schema';
@@ -23,6 +23,28 @@ export interface LogDoseInput {
 
 export const doseEventService = {
   async logDose(input: LogDoseInput): Promise<DoseEventRow> {
+    // Check if event already exists for this schedule+time (prevent duplicates)
+    const existing = await db
+      .select()
+      .from(doseEvents)
+      .where(
+        and(
+          eq(doseEvents.scheduleId, input.scheduleId),
+          eq(doseEvents.scheduledAt, input.scheduledAt),
+        ),
+      )
+      .limit(1);
+
+    if (existing[0]) {
+      // Update status instead of creating duplicate
+      const recordedAt = nowISO();
+      await db
+        .update(doseEvents)
+        .set({ status: input.status, recordedAt })
+        .where(eq(doseEvents.id, existing[0].id));
+      return normalizeRow({ ...existing[0], status: input.status, recordedAt });
+    }
+
     const id = generateId();
     const recordedAt = nowISO();
     const values = {
@@ -57,14 +79,21 @@ export const doseEventService = {
   },
 
   async getForProfileToday(profileId: string): Promise<DoseEventRow[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const rows = await db
       .select()
       .from(doseEvents)
-      .where(and(eq(doseEvents.profileId, profileId), gte(doseEvents.scheduledAt, todayISO)))
+      .where(
+        and(
+          eq(doseEvents.profileId, profileId),
+          gte(doseEvents.scheduledAt, todayStart.toISOString()),
+          lte(doseEvents.scheduledAt, todayEnd.toISOString()),
+        ),
+      )
       .orderBy(desc(doseEvents.scheduledAt));
 
     return rows.map(normalizeRow);

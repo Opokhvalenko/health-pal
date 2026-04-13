@@ -5,6 +5,9 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * but for expo-sqlite we run them manually on app start.
  */
 export function runMigrations(db: SQLiteDatabase): void {
+  // Enable foreign key enforcement (off by default in SQLite)
+  db.execSync('PRAGMA foreign_keys = ON;');
+
   db.execSync(`
     CREATE TABLE IF NOT EXISTS profiles (
       id TEXT PRIMARY KEY NOT NULL,
@@ -49,7 +52,8 @@ export function runMigrations(db: SQLiteDatabase): void {
       profile_id TEXT NOT NULL REFERENCES profiles(id),
       scheduled_at TEXT NOT NULL,
       status TEXT NOT NULL CHECK (status IN ('taken', 'skipped', 'missed', 'snoozed')),
-      recorded_at TEXT NOT NULL
+      recorded_at TEXT NOT NULL,
+      UNIQUE(schedule_id, scheduled_at)
     );
 
     CREATE TABLE IF NOT EXISTS symptom_logs (
@@ -145,6 +149,15 @@ export function runMigrations(db: SQLiteDatabase): void {
 
   // Indexes that depend on additive columns must be created after the columns
   db.execSync(`CREATE INDEX IF NOT EXISTS idx_medications_course ON medications(course_id);`);
+
+  // Unique constraint for existing DBs (idempotent — fails silently if already exists)
+  try {
+    db.execSync(
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_dose_events_unique ON dose_events(schedule_id, scheduled_at);`,
+    );
+  } catch {
+    // Index already exists or table was created with UNIQUE constraint
+  }
 }
 
 /**
@@ -152,9 +165,9 @@ export function runMigrations(db: SQLiteDatabase): void {
  * IF NOT EXISTS for ALTER TABLE ADD COLUMN, so we check first.
  */
 function addColumnIfMissing(db: SQLiteDatabase, table: string, column: string, type: string): void {
-  const result = db.getAllSync<{ name: string }>(`PRAGMA table_info(${table});`);
+  const result = db.getAllSync<{ name: string }>(`PRAGMA table_info("${table}");`);
   const exists = result.some((col) => col.name === column);
   if (!exists) {
-    db.execSync(`ALTER TABLE ${table} ADD COLUMN ${column} ${type};`);
+    db.execSync(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${type};`);
   }
 }

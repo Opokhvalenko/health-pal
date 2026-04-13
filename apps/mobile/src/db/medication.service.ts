@@ -84,19 +84,25 @@ export const medicationService = {
       .where(and(eq(medications.profileId, profileId), eq(medications.isArchived, false)))
       .all();
 
-    const result: MedicationWithSchedule[] = [];
-    for (const med of meds) {
-      const scheduleRows = await db
-        .select()
-        .from(schedules)
-        .where(eq(schedules.medicationId, med.id))
-        .limit(1);
-      result.push({
-        medication: normalizeMed(med),
-        schedule: scheduleRows[0] ? normalizeSchedule(scheduleRows[0]) : null,
-      });
+    if (meds.length === 0) return [];
+
+    // Batch fetch all schedules for these medications (avoids N+1)
+    const medIds = meds.map((m) => m.id);
+    const allSchedules = await db.select().from(schedules).all();
+    const scheduleMap = new Map<string, (typeof allSchedules)[0]>();
+    for (const s of allSchedules) {
+      if (medIds.includes(s.medicationId) && !scheduleMap.has(s.medicationId)) {
+        scheduleMap.set(s.medicationId, s);
+      }
     }
-    return result;
+
+    return meds.map((med) => {
+      const sched = scheduleMap.get(med.id);
+      return {
+        medication: normalizeMed(med),
+        schedule: sched ? normalizeSchedule(sched) : null,
+      };
+    });
   },
 
   async create(input: CreateMedicationInput): Promise<MedicationWithSchedule> {
