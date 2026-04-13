@@ -379,6 +379,7 @@
     "back": "Back",
     "close": "Close",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "error": "Error"
   }
 }
