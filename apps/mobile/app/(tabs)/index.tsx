@@ -169,21 +169,22 @@ export default function TodayScreen(): React.JSX.Element {
                   key={`${dose.scheduleId}-${dose.timeStr}`}
                   entering={FadeIn.delay(index * 40)}
                   layout={LinearTransition.springify()}
-                  style={styles.completedCard}
                 >
-                  <View style={styles.completedInfo}>
-                    <Text style={styles.completedName}>{dose.medicationName}</Text>
-                    <Text style={styles.completedTime}>{dose.timeStr}</Text>
+                  <View style={styles.completedCard}>
+                    <View style={styles.completedInfo}>
+                      <Text style={styles.completedName}>{dose.medicationName}</Text>
+                      <Text style={styles.completedTime}>{dose.timeStr}</Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.completedStatus,
+                        dose.status === 'skipped' && styles.completedSkipped,
+                        dose.status === 'snoozed' && styles.completedSnoozed,
+                      ]}
+                    >
+                      {t(`dose.${dose.status}`)}
+                    </Text>
                   </View>
-                  <Text
-                    style={[
-                      styles.completedStatus,
-                      dose.status === 'skipped' && styles.completedSkipped,
-                      dose.status === 'snoozed' && styles.completedSnoozed,
-                    ]}
-                  >
-                    {t(`dose.${dose.status}`)}
-                  </Text>
                 </Animated.View>
               ))}
             </View>

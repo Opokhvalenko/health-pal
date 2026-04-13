@@ -28,8 +28,9 @@ export default function TreatmentCoursesScreen(): React.JSX.Element {
     }, [load]),
   );
 
-  const active = courses.filter((c) => c.endDate === null);
-  const completed = courses.filter((c) => c.endDate !== null);
+  const today = new Date().toISOString().split('T')[0] ?? '';
+  const active = courses.filter((c) => c.endDate === null || c.endDate >= today);
+  const completed = courses.filter((c) => c.endDate !== null && c.endDate < today);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

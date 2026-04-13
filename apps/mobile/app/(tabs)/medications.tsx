@@ -7,20 +7,25 @@ import Animated, { FadeInRight, LinearTransition } from 'react-native-reanimated
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { MedicationsSkeleton } from '../../src/components/skeletons/MedicationsSkeleton';
-import type { MedicationWithSchedule } from '../../src/db';
-import { medicationService } from '../../src/db';
+import type { MedicationWithSchedule, TreatmentCourseRow } from '../../src/db';
+import { medicationService, treatmentCourseService } from '../../src/db';
 import { useAppStore } from '../../src/stores';
 
 export default function MedicationsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
   const [meds, setMeds] = useState<MedicationWithSchedule[]>([]);
+  const [courses, setCourses] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
 
   const loadMeds = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
-    const result = await medicationService.getAllForProfile(activeProfile.id);
+    const [result, allCourses] = await Promise.all([
+      medicationService.getAllForProfile(activeProfile.id),
+      treatmentCourseService.getForProfile(activeProfile.id),
+    ]);
     setMeds(result);
+    setCourses(new Map(allCourses.map((c) => [c.id, c.title])));
     setLoading(false);
   }, [activeProfile]);
 
@@ -74,7 +79,11 @@ export default function MedicationsScreen(): React.JSX.Element {
                 entering={FadeInRight.delay(index * 50).springify()}
                 layout={LinearTransition.springify()}
               >
-                <MedicationCard item={item} t={t} />
+                <MedicationCard
+                  item={item}
+                  t={t}
+                  courseName={courses.get(item.medication.courseId ?? '') ?? null}
+                />
               </Animated.View>
             ))}
           </View>
@@ -89,7 +98,11 @@ export default function MedicationsScreen(): React.JSX.Element {
                 entering={FadeInRight.delay(index * 50).springify()}
                 layout={LinearTransition.springify()}
               >
-                <MedicationCard item={item} t={t} />
+                <MedicationCard
+                  item={item}
+                  t={t}
+                  courseName={courses.get(item.medication.courseId ?? '') ?? null}
+                />
               </Animated.View>
             ))}
           </View>
@@ -106,9 +119,11 @@ export default function MedicationsScreen(): React.JSX.Element {
 function MedicationCard({
   item,
   t,
+  courseName,
 }: {
   item: MedicationWithSchedule;
   t: (key: string) => string;
+  courseName: string | null;
 }): React.JSX.Element {
   const { medication, schedule } = item;
 
@@ -128,6 +143,11 @@ function MedicationCard({
           {medication.dosageValue} {t(`medications.units.${medication.dosageUnit}`)}
         </Text>
       </View>
+      {courseName && (
+        <View style={styles.cardCourseBadge}>
+          <Text style={styles.cardCourseText}>{courseName}</Text>
+        </View>
+      )}
       {schedule && (
         <View style={styles.cardSchedule}>
           <Text style={styles.cardScheduleType}>
@@ -227,6 +247,19 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 2,
   },
   cardTimeText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  cardCourseBadge: {
+    backgroundColor: theme.colors.surfaceSecondary,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+    marginTop: theme.spacing.xs,
+  },
+  cardCourseText: {
     fontSize: theme.fontSize.xs,
     color: theme.colors.primary,
     fontWeight: theme.fontWeight.semibold,
