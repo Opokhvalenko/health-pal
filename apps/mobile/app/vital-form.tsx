@@ -1,7 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { VitalType } from '../src/db';
@@ -80,82 +88,92 @@ export default function VitalFormScreen(): React.JSX.Element {
         <Text style={styles.title}>{t('vitals.add')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.label}>{t('vitals.type')}</Text>
-        <View style={styles.chipWrap}>
-          {VITAL_TYPES.map((vt) => (
-            <Pressable
-              key={vt}
-              style={[styles.chip, type === vt && styles.chipSelected]}
-              onPress={() => setType(vt)}
-            >
-              <Text style={[styles.chipText, type === vt && styles.chipTextSelected]}>
-                {t(`vitals.types.${vt}`)}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={styles.label}>
-          {isBP ? t('vitals.systolic') : t('vitals.value')} ({unit})
-        </Text>
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={setValue}
-          placeholder={isBP ? '120' : t('vitals.valuePlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          keyboardType="numeric"
-        />
-
-        {isBP && (
-          <>
-            <Text style={styles.label}>
-              {t('vitals.diastolic')} ({unit})
-            </Text>
-            <TextInput
-              style={styles.input}
-              value={valueSecondary}
-              onChangeText={setValueSecondary}
-              placeholder="80"
-              placeholderTextColor="#B0B0B0"
-              keyboardType="numeric"
-            />
-
-            <Text style={styles.label}>
-              {t('vitals.pulse')} ({VITAL_DEFAULT_UNIT.heart_rate})
-            </Text>
-            <Text style={styles.hint}>{t('vitals.pulseHint')}</Text>
-            <TextInput
-              style={styles.input}
-              value={pulse}
-              onChangeText={setPulse}
-              placeholder="72"
-              placeholderTextColor="#B0B0B0"
-              keyboardType="numeric"
-            />
-          </>
-        )}
-
-        <Text style={styles.label}>{t('vitals.notes')}</Text>
-        <TextInput
-          style={[styles.input, styles.notesInput]}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder={t('vitals.notesPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={3}
-        />
-
-        <Pressable
-          style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-          onPress={() => void handleSave()}
-          disabled={!canSave}
+      <KeyboardAvoidingView
+        style={styles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
-          <Text style={styles.saveText}>{t('vitals.save')}</Text>
-        </Pressable>
-      </ScrollView>
+          <Text style={styles.label}>{t('vitals.type')}</Text>
+          <View style={styles.chipWrap}>
+            {VITAL_TYPES.map((vt) => (
+              <Pressable
+                key={vt}
+                style={[styles.chip, type === vt && styles.chipSelected]}
+                onPress={() => setType(vt)}
+              >
+                <Text style={[styles.chipText, type === vt && styles.chipTextSelected]}>
+                  {t(`vitals.types.${vt}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.label}>
+            {isBP ? t('vitals.systolic') : t('vitals.value')} ({unit})
+          </Text>
+          <TextInput
+            style={styles.input}
+            value={value}
+            onChangeText={setValue}
+            placeholder={isBP ? '120' : t('vitals.valuePlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            keyboardType="numeric"
+          />
+
+          {isBP && (
+            <>
+              <Text style={styles.label}>
+                {t('vitals.diastolic')} ({unit})
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={valueSecondary}
+                onChangeText={setValueSecondary}
+                placeholder="80"
+                placeholderTextColor="#B0B0B0"
+                keyboardType="numeric"
+              />
+
+              <Text style={styles.label}>
+                {t('vitals.pulse')} ({VITAL_DEFAULT_UNIT.heart_rate})
+              </Text>
+              <Text style={styles.hint}>{t('vitals.pulseHint')}</Text>
+              <TextInput
+                style={styles.input}
+                value={pulse}
+                onChangeText={setPulse}
+                placeholder="72"
+                placeholderTextColor="#B0B0B0"
+                keyboardType="numeric"
+              />
+            </>
+          )}
+
+          <Text style={styles.label}>{t('vitals.notes')}</Text>
+          <TextInput
+            style={[styles.input, styles.notesInput]}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={t('vitals.notesPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={3}
+          />
+
+          <Pressable
+            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+            onPress={() => void handleSave()}
+            disabled={!canSave}
+          >
+            <Text style={styles.saveText}>{t('vitals.save')}</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -164,6 +182,9 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  flex1: {
+    flex: 1,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
@@ -182,7 +203,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: 120,
+    paddingBottom: theme.spacing.xxl,
   },
   label: {
     fontSize: theme.fontSize.sm,

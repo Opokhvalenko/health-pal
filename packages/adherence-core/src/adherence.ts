@@ -118,7 +118,8 @@ export function computeTodayState(
 
 /**
  * Computes calendar grid data for the adherence heatmap.
- * Returns exactly `weeks * 7` days ending on `now`.
+ * Returns exactly `weeks * 7` days, ending on the Sunday of the week containing `now`.
+ * The grid is aligned so day-of-week (Mon..Sun) maps to row index 0..6.
  */
 export function computeCalendarData(
   events: readonly DoseEvent[],
@@ -137,10 +138,16 @@ export function computeCalendarData(
     byDate.set(key, existing);
   }
 
+  // End range on the Sunday of the week containing `now` (Mon-first week).
+  // JS getDay(): Sun=0..Sat=6 → normalize to Mon=0..Sun=6, then pad to Sunday.
+  const monFirstDow = (now.getDay() + 6) % 7;
+  const endSunday = new Date(now);
+  endSunday.setDate(now.getDate() + (6 - monFirstDow));
+
   const days: CalendarDay[] = [];
   for (let i = totalDays - 1; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
+    const date = new Date(endSunday);
+    date.setDate(endSunday.getDate() - i);
     const key = toDateKey(date);
     const dayEvents = byDate.get(key);
 

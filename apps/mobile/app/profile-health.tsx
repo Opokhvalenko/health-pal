@@ -2,7 +2,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { BloodType, ProfileRow } from '../src/db';
@@ -96,100 +104,110 @@ export default function ProfileHealthScreen(): React.JSX.Element {
         <Text style={styles.subtitle}>{profile.name}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Date of birth */}
-        <Text style={styles.label}>{t('profileHealth.dateOfBirth')}</Text>
-        <Pressable style={styles.input} onPress={() => setShowDatePicker(true)}>
-          <Text style={[styles.inputText, !dateOfBirth && styles.inputPlaceholder]}>
-            {dateOfBirth ?? t('profileHealth.dateOfBirthPlaceholder')}
-          </Text>
-        </Pressable>
-        {showDatePicker && (
-          <View style={styles.pickerContainer}>
-            <DateTimePicker
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              value={dateOfBirth ? new Date(dateOfBirth) : new Date(1990, 0, 1)}
-              maximumDate={new Date()}
-              onChange={handleDateChange}
-            />
-            {Platform.OS === 'ios' && (
-              <Pressable style={styles.pickerDoneButton} onPress={() => setShowDatePicker(false)}>
-                <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+      <KeyboardAvoidingView
+        style={styles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        >
+          {/* Date of birth */}
+          <Text style={styles.label}>{t('profileHealth.dateOfBirth')}</Text>
+          <Pressable style={styles.input} onPress={() => setShowDatePicker(true)}>
+            <Text style={[styles.inputText, !dateOfBirth && styles.inputPlaceholder]}>
+              {dateOfBirth ?? t('profileHealth.dateOfBirthPlaceholder')}
+            </Text>
+          </Pressable>
+          {showDatePicker && (
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                value={dateOfBirth ? new Date(dateOfBirth) : new Date(1990, 0, 1)}
+                maximumDate={new Date()}
+                onChange={handleDateChange}
+              />
+              {Platform.OS === 'ios' && (
+                <Pressable style={styles.pickerDoneButton} onPress={() => setShowDatePicker(false)}>
+                  <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {/* Weight */}
+          <Text style={styles.label}>{t('profileHealth.weight')}</Text>
+          <TextInput
+            style={styles.input}
+            value={weight}
+            onChangeText={setWeight}
+            placeholder={t('profileHealth.weightPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            keyboardType="numeric"
+          />
+
+          {/* Height */}
+          <Text style={styles.label}>{t('profileHealth.height')}</Text>
+          <TextInput
+            style={styles.input}
+            value={height}
+            onChangeText={setHeight}
+            placeholder={t('profileHealth.heightPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            keyboardType="numeric"
+          />
+
+          {/* Blood type */}
+          <Text style={styles.label}>{t('profileHealth.bloodType')}</Text>
+          <View style={styles.chipWrap}>
+            {BLOOD_TYPES.map((type) => (
+              <Pressable
+                key={type}
+                style={[styles.chip, bloodType === type && styles.chipSelected]}
+                onPress={() => setBloodType(type)}
+              >
+                <Text style={[styles.chipText, bloodType === type && styles.chipTextSelected]}>
+                  {type === 'unknown' ? t('profileHealth.bloodTypeUnknown') : type}
+                </Text>
               </Pressable>
-            )}
+            ))}
           </View>
-        )}
 
-        {/* Weight */}
-        <Text style={styles.label}>{t('profileHealth.weight')}</Text>
-        <TextInput
-          style={styles.input}
-          value={weight}
-          onChangeText={setWeight}
-          placeholder={t('profileHealth.weightPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          keyboardType="numeric"
-        />
+          {/* Allergies */}
+          <Text style={styles.label}>{t('profileHealth.allergies')}</Text>
+          <Text style={styles.hint}>{t('profileHealth.commaSeparated')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={allergiesText}
+            onChangeText={setAllergiesText}
+            placeholder={t('profileHealth.allergiesPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={2}
+          />
 
-        {/* Height */}
-        <Text style={styles.label}>{t('profileHealth.height')}</Text>
-        <TextInput
-          style={styles.input}
-          value={height}
-          onChangeText={setHeight}
-          placeholder={t('profileHealth.heightPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          keyboardType="numeric"
-        />
+          {/* Chronic conditions */}
+          <Text style={styles.label}>{t('profileHealth.chronicConditions')}</Text>
+          <Text style={styles.hint}>{t('profileHealth.commaSeparated')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={conditionsText}
+            onChangeText={setConditionsText}
+            placeholder={t('profileHealth.chronicConditionsPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={3}
+          />
 
-        {/* Blood type */}
-        <Text style={styles.label}>{t('profileHealth.bloodType')}</Text>
-        <View style={styles.chipWrap}>
-          {BLOOD_TYPES.map((type) => (
-            <Pressable
-              key={type}
-              style={[styles.chip, bloodType === type && styles.chipSelected]}
-              onPress={() => setBloodType(type)}
-            >
-              <Text style={[styles.chipText, bloodType === type && styles.chipTextSelected]}>
-                {type === 'unknown' ? t('profileHealth.bloodTypeUnknown') : type}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        {/* Allergies */}
-        <Text style={styles.label}>{t('profileHealth.allergies')}</Text>
-        <Text style={styles.hint}>{t('profileHealth.commaSeparated')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={allergiesText}
-          onChangeText={setAllergiesText}
-          placeholder={t('profileHealth.allergiesPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={2}
-        />
-
-        {/* Chronic conditions */}
-        <Text style={styles.label}>{t('profileHealth.chronicConditions')}</Text>
-        <Text style={styles.hint}>{t('profileHealth.commaSeparated')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={conditionsText}
-          onChangeText={setConditionsText}
-          placeholder={t('profileHealth.chronicConditionsPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={3}
-        />
-
-        {/* Save */}
-        <Pressable style={styles.saveButton} onPress={() => void handleSave()}>
-          <Text style={styles.saveText}>{t('profileHealth.save')}</Text>
-        </Pressable>
-      </ScrollView>
+          {/* Save */}
+          <Pressable style={styles.saveButton} onPress={() => void handleSave()}>
+            <Text style={styles.saveText}>{t('profileHealth.save')}</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -198,6 +216,9 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  flex1: {
+    flex: 1,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
@@ -221,7 +242,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: 120,
+    paddingBottom: theme.spacing.xxl,
   },
   label: {
     fontSize: theme.fontSize.sm,

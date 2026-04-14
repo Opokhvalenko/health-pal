@@ -115,7 +115,7 @@ export default function MorningPlanScreen(): React.JSX.Element {
                       {dose.medicationName}
                     </Text>
                     <Text style={styles.rowDosage}>
-                      {dose.dosageValue} {dose.dosageUnit} — {dose.time}
+                      {dose.dosageValue} {t(`medications.units.${dose.dosageUnit}`)} — {dose.time}
                     </Text>
                   </View>
                 </Pressable>

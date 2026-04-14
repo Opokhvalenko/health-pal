@@ -50,7 +50,7 @@ export function CaregiverDashboard(): React.JSX.Element {
               <Text style={styles.doseTime}>{dose.timeStr}</Text>
               <Text style={styles.doseName}>{dose.medicationName}</Text>
               <Text style={styles.doseDosage}>
-                {dose.dosageValue} {dose.dosageUnit}
+                {dose.dosageValue} {t(`medications.units.${dose.dosageUnit}`)}
               </Text>
             </View>
           ))
@@ -69,7 +69,8 @@ export function CaregiverDashboard(): React.JSX.Element {
             <View style={styles.nextDoseInfo}>
               <Text style={styles.nextDoseName}>{nextDose.medicationName}</Text>
               <Text style={styles.nextDoseTime}>
-                {nextDose.timeStr} — {nextDose.dosageValue} {nextDose.dosageUnit}
+                {nextDose.timeStr} — {nextDose.dosageValue}{' '}
+                {t(`medications.units.${nextDose.dosageUnit}`)}
               </Text>
             </View>
             <Pressable style={styles.takeButton} onPress={() => void handleTake()}>

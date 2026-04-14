@@ -48,13 +48,14 @@ export function BigButtonView(): React.JSX.Element {
               onPress={() => void handleTake()}
               accessibilityRole="button"
               accessibilityLabel={`${t('bigButton.takeNow')} ${nextPending.medicationName}`}
-              accessibilityHint={`${nextPending.dosageValue} ${nextPending.dosageUnit}`}
+              accessibilityHint={`${nextPending.dosageValue} ${t(`medications.units.${nextPending.dosageUnit}`)}`}
             >
               <Text style={styles.bigButtonText}>{t('bigButton.takeNow')}</Text>
             </Pressable>
             <Text style={styles.medName}>{nextPending.medicationName}</Text>
             <Text style={styles.medTime}>
-              {nextPending.dosageValue} {nextPending.dosageUnit} — {nextPending.timeStr}
+              {nextPending.dosageValue} {t(`medications.units.${nextPending.dosageUnit}`)} —{' '}
+              {nextPending.timeStr}
             </Text>
           </>
         ) : (

@@ -2,7 +2,16 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { SymptomSnapshot } from '../src/db';
@@ -155,175 +164,185 @@ export default function DoctorVisitFormScreen(): React.JSX.Element {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Doctor name */}
-        <Text style={styles.label}>{t('doctorVisits.doctorName')}</Text>
-        <TextInput
-          style={styles.input}
-          value={doctorName}
-          onChangeText={setDoctorName}
-          placeholder={t('doctorVisits.doctorNamePlaceholder')}
-          placeholderTextColor="#B0B0B0"
-        />
+      <KeyboardAvoidingView
+        style={styles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        >
+          {/* Doctor name */}
+          <Text style={styles.label}>{t('doctorVisits.doctorName')}</Text>
+          <TextInput
+            style={styles.input}
+            value={doctorName}
+            onChangeText={setDoctorName}
+            placeholder={t('doctorVisits.doctorNamePlaceholder')}
+            placeholderTextColor="#B0B0B0"
+          />
 
-        {/* Specialty */}
-        <Text style={styles.label}>{t('doctorVisits.specialty')}</Text>
-        <TextInput
-          style={styles.input}
-          value={specialty}
-          onChangeText={setSpecialty}
-          placeholder={t('doctorVisits.specialtyPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-        />
+          {/* Specialty */}
+          <Text style={styles.label}>{t('doctorVisits.specialty')}</Text>
+          <TextInput
+            style={styles.input}
+            value={specialty}
+            onChangeText={setSpecialty}
+            placeholder={t('doctorVisits.specialtyPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+          />
 
-        {/* Visit date */}
-        <Text style={styles.label}>{t('doctorVisits.visitDate')}</Text>
-        <Pressable style={styles.input} onPress={() => setShowVisitDatePicker(true)}>
-          <Text style={styles.inputText}>{visitDate}</Text>
-        </Pressable>
-        {showVisitDatePicker && (
-          <View style={styles.pickerContainer}>
-            <DateTimePicker
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              value={new Date(visitDate)}
-              onChange={onVisitDateChange}
-            />
-            {Platform.OS === 'ios' && (
+          {/* Visit date */}
+          <Text style={styles.label}>{t('doctorVisits.visitDate')}</Text>
+          <Pressable style={styles.input} onPress={() => setShowVisitDatePicker(true)}>
+            <Text style={styles.inputText}>{visitDate}</Text>
+          </Pressable>
+          {showVisitDatePicker && (
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                value={new Date(visitDate)}
+                onChange={onVisitDateChange}
+              />
+              {Platform.OS === 'ios' && (
+                <Pressable
+                  style={styles.pickerDoneButton}
+                  onPress={() => setShowVisitDatePicker(false)}
+                >
+                  <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {/* Reason */}
+          <Text style={styles.label}>{t('doctorVisits.reason')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={reason}
+            onChangeText={setReason}
+            placeholder={t('doctorVisits.reasonPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+          />
+
+          {/* Pre-visit prep: recent symptoms */}
+          <Text style={styles.label}>{t('doctorVisits.recentSymptoms')}</Text>
+          <Text style={styles.hint}>{t('doctorVisits.recentSymptomsHint')}</Text>
+          <View style={styles.symptomBox}>
+            {symptomsToShow.length === 0 ? (
+              <Text style={styles.symptomEmpty}>{t('doctorVisits.noRecentSymptoms')}</Text>
+            ) : (
+              symptomsToShow.map((s) => (
+                <View key={`${s.name}-${s.loggedAt}`} style={styles.symptomRow}>
+                  <Text style={styles.symptomName}>{s.name}</Text>
+                  <View style={styles.symptomMeta}>
+                    <Text style={styles.symptomSeverity}>{s.severity}/10</Text>
+                    <Text style={styles.symptomDate}>
+                      {new Date(s.loggedAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+
+          {/* Recommendations */}
+          <Text style={styles.label}>{t('doctorVisits.recommendations')}</Text>
+          <Text style={styles.hint}>{t('doctorVisits.recommendationsHint')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={recommendations}
+            onChangeText={setRecommendations}
+            placeholder={t('doctorVisits.recommendationsPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={4}
+          />
+
+          {/* Prescriptions */}
+          <Text style={styles.label}>{t('doctorVisits.prescriptions')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={prescriptions}
+            onChangeText={setPrescriptions}
+            placeholder={t('doctorVisits.prescriptionsPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={3}
+          />
+
+          {/* Next visit date */}
+          <Text style={styles.label}>{t('doctorVisits.nextVisitDate')}</Text>
+          <View style={styles.row}>
+            <Pressable
+              style={[styles.input, styles.flex1]}
+              onPress={() => setShowNextDatePicker(true)}
+            >
+              <Text style={[styles.inputText, !nextVisitDate && styles.inputPlaceholder]}>
+                {nextVisitDate ?? t('doctorVisits.nextVisitPlaceholder')}
+              </Text>
+            </Pressable>
+            {nextVisitDate && (
               <Pressable
-                style={styles.pickerDoneButton}
-                onPress={() => setShowVisitDatePicker(false)}
+                style={styles.clearButton}
+                onPress={() => setNextVisitDate(null)}
+                accessibilityLabel={t('common.cancel')}
               >
-                <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+                <Text style={styles.clearButtonText}>✕</Text>
               </Pressable>
             )}
           </View>
-        )}
-
-        {/* Reason */}
-        <Text style={styles.label}>{t('doctorVisits.reason')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={reason}
-          onChangeText={setReason}
-          placeholder={t('doctorVisits.reasonPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-        />
-
-        {/* Pre-visit prep: recent symptoms */}
-        <Text style={styles.label}>{t('doctorVisits.recentSymptoms')}</Text>
-        <Text style={styles.hint}>{t('doctorVisits.recentSymptomsHint')}</Text>
-        <View style={styles.symptomBox}>
-          {symptomsToShow.length === 0 ? (
-            <Text style={styles.symptomEmpty}>{t('doctorVisits.noRecentSymptoms')}</Text>
-          ) : (
-            symptomsToShow.map((s) => (
-              <View key={`${s.name}-${s.loggedAt}`} style={styles.symptomRow}>
-                <Text style={styles.symptomName}>{s.name}</Text>
-                <View style={styles.symptomMeta}>
-                  <Text style={styles.symptomSeverity}>{s.severity}/10</Text>
-                  <Text style={styles.symptomDate}>
-                    {new Date(s.loggedAt).toLocaleDateString()}
-                  </Text>
-                </View>
-              </View>
-            ))
+          {showNextDatePicker && (
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                value={nextVisitDate ? new Date(nextVisitDate) : new Date()}
+                minimumDate={new Date()}
+                onChange={onNextDateChange}
+              />
+              {Platform.OS === 'ios' && (
+                <Pressable
+                  style={styles.pickerDoneButton}
+                  onPress={() => setShowNextDatePicker(false)}
+                >
+                  <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
+                </Pressable>
+              )}
+            </View>
           )}
-        </View>
 
-        {/* Recommendations */}
-        <Text style={styles.label}>{t('doctorVisits.recommendations')}</Text>
-        <Text style={styles.hint}>{t('doctorVisits.recommendationsHint')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={recommendations}
-          onChangeText={setRecommendations}
-          placeholder={t('doctorVisits.recommendationsPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={4}
-        />
+          {/* Notes */}
+          <Text style={styles.label}>{t('doctorVisits.notes')}</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={t('doctorVisits.notesPlaceholder')}
+            placeholderTextColor="#B0B0B0"
+            multiline
+            numberOfLines={3}
+          />
 
-        {/* Prescriptions */}
-        <Text style={styles.label}>{t('doctorVisits.prescriptions')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={prescriptions}
-          onChangeText={setPrescriptions}
-          placeholder={t('doctorVisits.prescriptionsPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={3}
-        />
-
-        {/* Next visit date */}
-        <Text style={styles.label}>{t('doctorVisits.nextVisitDate')}</Text>
-        <View style={styles.row}>
           <Pressable
-            style={[styles.input, styles.flex1]}
-            onPress={() => setShowNextDatePicker(true)}
+            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+            onPress={() => void handleSave()}
+            disabled={!canSave}
           >
-            <Text style={[styles.inputText, !nextVisitDate && styles.inputPlaceholder]}>
-              {nextVisitDate ?? t('doctorVisits.nextVisitPlaceholder')}
-            </Text>
+            <Text style={styles.saveText}>{t('doctorVisits.save')}</Text>
           </Pressable>
-          {nextVisitDate && (
-            <Pressable
-              style={styles.clearButton}
-              onPress={() => setNextVisitDate(null)}
-              accessibilityLabel={t('common.cancel')}
-            >
-              <Text style={styles.clearButtonText}>✕</Text>
+
+          {isEditing && (
+            <Pressable style={styles.deleteButton} onPress={handleDelete}>
+              <Text style={styles.deleteText}>{t('doctorVisits.delete')}</Text>
             </Pressable>
           )}
-        </View>
-        {showNextDatePicker && (
-          <View style={styles.pickerContainer}>
-            <DateTimePicker
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              value={nextVisitDate ? new Date(nextVisitDate) : new Date()}
-              minimumDate={new Date()}
-              onChange={onNextDateChange}
-            />
-            {Platform.OS === 'ios' && (
-              <Pressable
-                style={styles.pickerDoneButton}
-                onPress={() => setShowNextDatePicker(false)}
-              >
-                <Text style={styles.pickerDoneText}>{t('common.confirm')}</Text>
-              </Pressable>
-            )}
-          </View>
-        )}
-
-        {/* Notes */}
-        <Text style={styles.label}>{t('doctorVisits.notes')}</Text>
-        <TextInput
-          style={[styles.input, styles.multilineInput]}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder={t('doctorVisits.notesPlaceholder')}
-          placeholderTextColor="#B0B0B0"
-          multiline
-          numberOfLines={3}
-        />
-
-        <Pressable
-          style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-          onPress={() => void handleSave()}
-          disabled={!canSave}
-        >
-          <Text style={styles.saveText}>{t('doctorVisits.save')}</Text>
-        </Pressable>
-
-        {isEditing && (
-          <Pressable style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteText}>{t('doctorVisits.delete')}</Text>
-          </Pressable>
-        )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -349,7 +368,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: 120,
+    paddingBottom: theme.spacing.xxl,
   },
   label: {
     fontSize: theme.fontSize.sm,

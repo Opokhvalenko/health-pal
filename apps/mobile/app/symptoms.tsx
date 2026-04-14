@@ -2,7 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { SymptomRow } from '../src/db';
@@ -92,103 +101,113 @@ export default function SymptomsScreen(): React.JSX.Element {
         <Text style={styles.title}>{t('symptoms.title')}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {showForm ? (
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>{t('symptoms.logSymptom')}</Text>
+      <KeyboardAvoidingView
+        style={styles.flex1}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+        >
+          {showForm ? (
+            <View style={styles.form}>
+              <Text style={styles.formTitle}>{t('symptoms.logSymptom')}</Text>
 
-            <Text style={styles.label}>{t('symptoms.name')}</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder={t('symptoms.namePlaceholder')}
-              placeholderTextColor="#B0B0B0"
-            />
+              <Text style={styles.label}>{t('symptoms.name')}</Text>
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder={t('symptoms.namePlaceholder')}
+                placeholderTextColor="#B0B0B0"
+              />
 
-            <Text style={styles.label}>
-              {t('symptoms.severity')}: {severity}/10 — {t(`symptoms.severityLabels.${severity}`)}
-            </Text>
-            <View style={styles.severityRow}>
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              <Text style={styles.label}>
+                {t('symptoms.severity')}: {severity}/10 — {t(`symptoms.severityLabels.${severity}`)}
+              </Text>
+              <View style={styles.severityRow}>
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                  <Pressable
+                    key={n}
+                    style={[
+                      styles.severityDot,
+                      { backgroundColor: severity >= n ? SEVERITY_COLORS[n - 1] : '#E0E0E0' },
+                    ]}
+                    onPress={() => setSeverity(n)}
+                  >
+                    <Text style={styles.severityNumber}>{n}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.label}>{t('symptoms.note')}</Text>
+              <TextInput
+                style={[styles.input, styles.noteInput]}
+                value={note}
+                onChangeText={setNote}
+                placeholder={t('symptoms.notePlaceholder')}
+                placeholderTextColor="#B0B0B0"
+                multiline
+                numberOfLines={3}
+              />
+
+              <View style={styles.formActions}>
+                <Pressable style={styles.cancelButton} onPress={() => setShowForm(false)}>
+                  <Text style={styles.cancelText}>{t('common.cancel')}</Text>
+                </Pressable>
                 <Pressable
-                  key={n}
-                  style={[
-                    styles.severityDot,
-                    { backgroundColor: severity >= n ? SEVERITY_COLORS[n - 1] : '#E0E0E0' },
-                  ]}
-                  onPress={() => setSeverity(n)}
+                  style={[styles.saveButton, !name.trim() && styles.saveButtonDisabled]}
+                  onPress={() => void handleSave()}
+                  disabled={!name.trim()}
                 >
-                  <Text style={styles.severityNumber}>{n}</Text>
+                  <Text style={styles.saveText}>{t('symptoms.save')}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable style={styles.addButton} onPress={() => setShowForm(true)}>
+              <Text style={styles.addButtonText}>+ {t('symptoms.logSymptom')}</Text>
+            </Pressable>
+          )}
+
+          {symptoms.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t('symptoms.recent')}</Text>
+              {symptoms.map((symptom) => (
+                <Pressable
+                  key={symptom.id}
+                  style={styles.symptomCard}
+                  onLongPress={() => handleDelete(symptom.id)}
+                >
+                  <View style={styles.symptomHeader}>
+                    <Text style={styles.symptomName}>{symptom.name}</Text>
+                    <View
+                      style={[
+                        styles.severityBadge,
+                        { backgroundColor: SEVERITY_COLORS[symptom.severity - 1] ?? '#999' },
+                      ]}
+                    >
+                      <Text style={styles.severityBadgeText}>{symptom.severity}/10</Text>
+                    </View>
+                  </View>
+                  {symptom.note && <Text style={styles.symptomNote}>{symptom.note}</Text>}
+                  <Text style={styles.symptomDate}>{formatDate(symptom.loggedAt)}</Text>
                 </Pressable>
               ))}
             </View>
+          )}
 
-            <Text style={styles.label}>{t('symptoms.note')}</Text>
-            <TextInput
-              style={[styles.input, styles.noteInput]}
-              value={note}
-              onChangeText={setNote}
-              placeholder={t('symptoms.notePlaceholder')}
-              placeholderTextColor="#B0B0B0"
-              multiline
-              numberOfLines={3}
-            />
-
-            <View style={styles.formActions}>
-              <Pressable style={styles.cancelButton} onPress={() => setShowForm(false)}>
-                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.saveButton, !name.trim() && styles.saveButtonDisabled]}
-                onPress={() => void handleSave()}
-                disabled={!name.trim()}
-              >
-                <Text style={styles.saveText}>{t('symptoms.save')}</Text>
-              </Pressable>
+          {symptoms.length === 0 && !showForm && (
+            <View style={styles.empty}>
+              <Ionicons name="clipboard-outline" size={48} color="#8AADA5" />
+              <Text style={styles.emptyText}>{t('symptoms.empty')}</Text>
+              <Text style={styles.emptyHint}>{t('symptoms.emptyHint')}</Text>
             </View>
-          </View>
-        ) : (
-          <Pressable style={styles.addButton} onPress={() => setShowForm(true)}>
-            <Text style={styles.addButtonText}>+ {t('symptoms.logSymptom')}</Text>
-          </Pressable>
-        )}
-
-        {symptoms.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('symptoms.recent')}</Text>
-            {symptoms.map((symptom) => (
-              <Pressable
-                key={symptom.id}
-                style={styles.symptomCard}
-                onLongPress={() => handleDelete(symptom.id)}
-              >
-                <View style={styles.symptomHeader}>
-                  <Text style={styles.symptomName}>{symptom.name}</Text>
-                  <View
-                    style={[
-                      styles.severityBadge,
-                      { backgroundColor: SEVERITY_COLORS[symptom.severity - 1] ?? '#999' },
-                    ]}
-                  >
-                    <Text style={styles.severityBadgeText}>{symptom.severity}/10</Text>
-                  </View>
-                </View>
-                {symptom.note && <Text style={styles.symptomNote}>{symptom.note}</Text>}
-                <Text style={styles.symptomDate}>{formatDate(symptom.loggedAt)}</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        {symptoms.length === 0 && !showForm && (
-          <View style={styles.empty}>
-            <Ionicons name="clipboard-outline" size={48} color="#8AADA5" />
-            <Text style={styles.emptyText}>{t('symptoms.empty')}</Text>
-            <Text style={styles.emptyHint}>{t('symptoms.emptyHint')}</Text>
-          </View>
-        )}
-      </ScrollView>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -197,6 +216,9 @@ const styles = StyleSheet.create((theme) => ({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  flex1: {
+    flex: 1,
   },
   header: {
     paddingHorizontal: theme.spacing.lg,
