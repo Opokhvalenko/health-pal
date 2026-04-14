@@ -9,9 +9,10 @@ export type VitalType =
   | 'temperature'
   | 'weight'
   | 'heart_rate'
-  | 'oxygen';
+  | 'oxygen'
+  | 'other';
 
-/** Default unit for each vital type. */
+/** Default unit for each vital type. `other` defaults to empty (user must provide). */
 export const VITAL_DEFAULT_UNIT: Record<VitalType, string> = {
   blood_pressure: 'mmHg',
   glucose: 'mg/dL',
@@ -19,6 +20,7 @@ export const VITAL_DEFAULT_UNIT: Record<VitalType, string> = {
   weight: 'kg',
   heart_rate: 'bpm',
   oxygen: '%',
+  other: '',
 };
 
 export interface VitalRow {
@@ -121,5 +123,15 @@ export function formatVitalValue(vital: VitalRow): string {
   if (vital.type === 'blood_pressure' && vital.valueSecondary !== null) {
     return `${vital.valueNumeric}/${vital.valueSecondary} ${vital.unit}`;
   }
-  return `${vital.valueNumeric} ${vital.unit}`;
+  return `${vital.valueNumeric} ${vital.unit}`.trim();
+}
+
+/**
+ * Returns the custom name for an "other"-type vital, parsed from its notes payload.
+ * For known types, returns null (use translation key instead).
+ */
+export function getCustomVitalName(vital: VitalRow): string | null {
+  if (vital.type !== 'other' || !vital.notes) return null;
+  const firstLine = vital.notes.split('\n')[0]?.trim();
+  return firstLine && firstLine.length > 0 ? firstLine : null;
 }

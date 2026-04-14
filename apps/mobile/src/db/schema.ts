@@ -166,9 +166,9 @@ export const vitals = sqliteTable('vitals', {
   profileId: text('profile_id')
     .notNull()
     .references(() => profiles.id),
-  /** Vital type: blood_pressure | glucose | temperature | weight | heart_rate | oxygen */
+  /** Vital type. 'other' allows custom user-defined readings (name stored in notes) */
   type: text('type', {
-    enum: ['blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen'],
+    enum: ['blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen', 'other'],
   }).notNull(),
   /** Primary numeric value (e.g. systolic for BP, value for others) */
   valueNumeric: real('value_numeric').notNull(),

@@ -132,8 +132,7 @@
     "calendar": "Activity",
     "partial": "Partial",
     "noData": "No data",
-    "thisWeek": "Now",
-    "weeksAgo": "−{{n}}w"
+    "weekRangeHint": "Monday of each week · current week highlighted"
   },
   "dose": {
     "take": "Take",
@@ -260,13 +259,18 @@
     "save": "Save",
     "delete": "Delete reading",
     "noReadings": "No readings yet",
+    "customName": "Reading name",
+    "customNamePlaceholder": "e.g. Cholesterol, TSH",
+    "customUnit": "Unit",
+    "customUnitPlaceholder": "e.g. mmol/L, mIU/L",
     "types": {
       "blood_pressure": "Blood Pressure",
       "glucose": "Glucose",
       "temperature": "Temperature",
       "weight": "Weight",
       "heart_rate": "Heart Rate",
-      "oxygen": "Oxygen Saturation"
+      "oxygen": "Oxygen Saturation",
+      "other": "Other"
     }
   },
   "medicationHistory": {

@@ -24,6 +24,7 @@ const VITAL_TYPES: VitalType[] = [
   'weight',
   'heart_rate',
   'oxygen',
+  'other',
 ];
 
 function isVitalType(value: string | undefined): value is VitalType {
@@ -41,17 +42,28 @@ export default function VitalFormScreen(): React.JSX.Element {
   const [valueSecondary, setValueSecondary] = useState('');
   const [pulse, setPulse] = useState('');
   const [notes, setNotes] = useState('');
+  const [customName, setCustomName] = useState('');
+  const [customUnit, setCustomUnit] = useState('');
 
   const isBP = type === 'blood_pressure';
-  const unit = VITAL_DEFAULT_UNIT[type];
+  const isOther = type === 'other';
+  const unit = isOther ? customUnit.trim() : VITAL_DEFAULT_UNIT[type];
 
   const canSave =
-    Number(value) > 0 && (!isBP || Number(valueSecondary) > 0) && activeProfile !== null;
+    Number(value) > 0 &&
+    (!isBP || Number(valueSecondary) > 0) &&
+    (!isOther || (customName.trim().length > 0 && customUnit.trim().length > 0)) &&
+    activeProfile !== null;
 
   const handleSave = async (): Promise<void> => {
     if (!activeProfile || !canSave) return;
     await safeAsync(async () => {
       const recordedAt = new Date().toISOString();
+
+      // For 'other' type, prepend the custom name as the first line of notes
+      const composedNotes = isOther
+        ? [customName.trim(), notes.trim()].filter(Boolean).join('\n')
+        : notes.trim() || undefined;
 
       await vitalService.create({
         profileId: activeProfile.id,
@@ -59,7 +71,7 @@ export default function VitalFormScreen(): React.JSX.Element {
         valueNumeric: Number(value),
         valueSecondary: isBP ? Number(valueSecondary) : undefined,
         unit,
-        notes: notes.trim() || undefined,
+        notes: composedNotes || undefined,
         recordedAt,
       });
 
@@ -119,8 +131,32 @@ export default function VitalFormScreen(): React.JSX.Element {
             ))}
           </View>
 
+          {isOther && (
+            <>
+              <Text style={styles.label}>{t('vitals.customName')}</Text>
+              <TextInput
+                style={styles.input}
+                value={customName}
+                onChangeText={setCustomName}
+                placeholder={t('vitals.customNamePlaceholder')}
+                placeholderTextColor="#B0B0B0"
+              />
+
+              <Text style={styles.label}>{t('vitals.customUnit')}</Text>
+              <TextInput
+                style={styles.input}
+                value={customUnit}
+                onChangeText={setCustomUnit}
+                placeholder={t('vitals.customUnitPlaceholder')}
+                placeholderTextColor="#B0B0B0"
+                autoCapitalize="none"
+              />
+            </>
+          )}
+
           <Text style={styles.label}>
-            {isBP ? t('vitals.systolic') : t('vitals.value')} ({unit})
+            {isBP ? t('vitals.systolic') : t('vitals.value')}
+            {unit ? ` (${unit})` : ''}
           </Text>
           <TextInput
             style={styles.input}

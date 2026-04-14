@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import type { VitalRow, VitalType } from '../src/db';
-import { formatVitalValue, vitalService } from '../src/db';
+import { formatVitalValue, getCustomVitalName, vitalService } from '../src/db';
 import { safeAsync } from '../src/helpers/safeAsync';
 import { useAppStore } from '../src/stores';
 
@@ -16,6 +16,7 @@ const VITAL_TYPES: VitalType[] = [
   'weight',
   'heart_rate',
   'oxygen',
+  'other',
 ];
 
 export default function VitalsScreen(): React.JSX.Element {
@@ -69,9 +70,9 @@ export default function VitalsScreen(): React.JSX.Element {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {loading ? null : (
-          <>
-            {VITAL_TYPES.map((type) => {
+        {loading
+          ? null
+          : VITAL_TYPES.map((type) => {
               const list = vitalsByType.get(type) ?? [];
               const latest = list[0];
               return (
@@ -89,30 +90,34 @@ export default function VitalsScreen(): React.JSX.Element {
                   {list.length === 0 ? (
                     <Text style={styles.emptyHint}>{t('vitals.noReadings')}</Text>
                   ) : (
-                    list.slice(0, 5).map((vital) => (
-                      <View key={vital.id} style={styles.readingRow}>
-                        <View style={styles.readingInfo}>
-                          <Text style={styles.readingValue}>{formatVitalValue(vital)}</Text>
-                          <Text style={styles.readingDate}>
-                            {new Date(vital.recordedAt).toLocaleString()}
-                          </Text>
+                    list.slice(0, 5).map((vital) => {
+                      const customName = getCustomVitalName(vital);
+                      return (
+                        <View key={vital.id} style={styles.readingRow}>
+                          <View style={styles.readingInfo}>
+                            <Text style={styles.readingValue}>
+                              {customName ? `${customName} — ` : ''}
+                              {formatVitalValue(vital)}
+                            </Text>
+                            <Text style={styles.readingDate}>
+                              {new Date(vital.recordedAt).toLocaleString()}
+                            </Text>
+                          </View>
+                          <Pressable
+                            onPress={() => void handleDelete(vital.id)}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('vitals.delete')}
+                            hitSlop={8}
+                          >
+                            <Text style={styles.deleteText}>✕</Text>
+                          </Pressable>
                         </View>
-                        <Pressable
-                          onPress={() => void handleDelete(vital.id)}
-                          accessibilityRole="button"
-                          accessibilityLabel={t('vitals.delete')}
-                          hitSlop={8}
-                        >
-                          <Text style={styles.deleteText}>✕</Text>
-                        </Pressable>
-                      </View>
-                    ))
+                      );
+                    })
                   )}
                 </Pressable>
               );
             })}
-          </>
-        )}
       </ScrollView>
 
       <Pressable
