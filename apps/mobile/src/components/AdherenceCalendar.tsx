@@ -41,6 +41,14 @@ function getStatusColor(status: DayStatus, colors: ThemeColors): string {
 const DAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 const DAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
+/** Formats ISO date "YYYY-MM-DD" into compact "DD.MM" for week column labels */
+function formatDayMonth(isoDate: string): string {
+  const parts = isoDate.split('-');
+  if (parts.length !== 3) return isoDate;
+  const [, month, day] = parts;
+  return `${day}.${month}`;
+}
+
 export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): React.JSX.Element {
   const { t } = useTranslation();
   const { theme } = useUnistyles();
@@ -96,16 +104,22 @@ export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): Reac
             ))}
           </Canvas>
 
-          {/* Week labels: oldest → current */}
+          {/* Week labels: Monday date of each week (oldest → newest) */}
           <View style={[calendarStyles.weekLabels, { width: canvasWidth }]}>
             {Array.from({ length: weeks }, (_, i) => {
-              const weeksAgo = weeks - 1 - i;
-              const label =
-                weeksAgo === 0 ? t('adherence.thisWeek') : t('adherence.weeksAgo', { n: weeksAgo });
+              const monday = days[i * ROWS];
+              const isCurrent = i === weeks - 1;
+              const label = monday ? formatDayMonth(monday.date) : '';
+              // Use Monday's ISO date as a stable key (unique per week)
+              const key = monday?.date ?? `empty-${label || isCurrent}`;
               return (
                 <Text
-                  key={`week-${weeksAgo}`}
-                  style={[calendarStyles.weekLabel, { width: CELL_SIZE + CELL_GAP }]}
+                  key={key}
+                  style={[
+                    calendarStyles.weekLabel,
+                    { width: CELL_SIZE + CELL_GAP },
+                    isCurrent && calendarStyles.weekLabelCurrent,
+                  ]}
                   numberOfLines={1}
                 >
                   {label}
@@ -113,6 +127,7 @@ export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): Reac
               );
             })}
           </View>
+          <Text style={calendarStyles.weekHelper}>{t('adherence.weekRangeHint')}</Text>
         </View>
       </View>
 
@@ -159,12 +174,22 @@ const calendarStyles = StyleSheet.create((theme) => ({
   },
   weekLabels: {
     flexDirection: 'row',
-    marginTop: 4,
+    marginTop: 6,
   },
   weekLabel: {
     fontSize: 9,
     color: theme.colors.textMuted,
     textAlign: 'center',
+  },
+  weekLabelCurrent: {
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.bold,
+  },
+  weekHelper: {
+    fontSize: 10,
+    color: theme.colors.textMuted,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   legend: {
     flexDirection: 'row',

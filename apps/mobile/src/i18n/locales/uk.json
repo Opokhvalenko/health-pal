@@ -132,8 +132,7 @@
     "calendar": "Активність",
     "partial": "Частково",
     "noData": "Немає даних",
-    "thisWeek": "Цей",
-    "weeksAgo": "−{{n}} тиж"
+    "weekRangeHint": "Понеділок кожного тижня · поточний виділений"
   },
   "dose": {
     "take": "Прийняти",
@@ -260,13 +259,18 @@
     "save": "Зберегти",
     "delete": "Видалити запис",
     "noReadings": "Записів ще немає",
+    "customName": "Назва показника",
+    "customNamePlaceholder": "напр. Холестерин, ТТГ",
+    "customUnit": "Одиниця виміру",
+    "customUnitPlaceholder": "напр. mmol/L, мОд/л",
     "types": {
       "blood_pressure": "Артеріальний тиск",
       "glucose": "Глюкоза",
       "temperature": "Температура",
       "weight": "Вага",
       "heart_rate": "Пульс",
-      "oxygen": "Сатурація"
+      "oxygen": "Сатурація",
+      "other": "Інший"
     }
   },
   "medicationHistory": {

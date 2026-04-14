@@ -44,4 +44,9 @@ export type {
 } from './treatment-course.service';
 export { treatmentCourseService } from './treatment-course.service';
 export type { CreateVitalInput, VitalRow, VitalType } from './vital.service';
-export { formatVitalValue, VITAL_DEFAULT_UNIT, vitalService } from './vital.service';
+export {
+  formatVitalValue,
+  getCustomVitalName,
+  VITAL_DEFAULT_UNIT,
+  vitalService,
+} from './vital.service';

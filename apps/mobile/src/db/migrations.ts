@@ -114,7 +114,7 @@ export function runMigrations(db: SQLiteDatabase): void {
     CREATE TABLE IF NOT EXISTS vitals (
       id TEXT PRIMARY KEY NOT NULL,
       profile_id TEXT NOT NULL REFERENCES profiles(id),
-      type TEXT NOT NULL CHECK (type IN ('blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen')),
+      type TEXT NOT NULL CHECK (type IN ('blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen', 'other')),
       value_numeric REAL NOT NULL,
       value_secondary REAL,
       unit TEXT NOT NULL,
@@ -158,6 +158,41 @@ export function runMigrations(db: SQLiteDatabase): void {
   } catch {
     // Index already exists or table was created with UNIQUE constraint
   }
+
+  // Migrate vitals.type CHECK constraint to include 'other' (for older installs)
+  rebuildVitalsTableIfNeeded(db);
+}
+
+/**
+ * Older installs created `vitals` with a CHECK constraint that excludes 'other'.
+ * SQLite cannot ALTER a CHECK constraint — we must rebuild the table.
+ * Detection: try inserting a sentinel row; if it fails on CHECK, rebuild.
+ */
+function rebuildVitalsTableIfNeeded(db: SQLiteDatabase): void {
+  // Probe by reading the table schema text and checking for 'other' in the constraint.
+  const rows = db.getAllSync<{ sql: string }>(
+    `SELECT sql FROM sqlite_master WHERE type='table' AND name='vitals';`,
+  );
+  const ddl = rows[0]?.sql ?? '';
+  if (ddl.includes("'other'")) return;
+
+  db.execSync(`
+    CREATE TABLE vitals_new (
+      id TEXT PRIMARY KEY NOT NULL,
+      profile_id TEXT NOT NULL REFERENCES profiles(id),
+      type TEXT NOT NULL CHECK (type IN ('blood_pressure', 'glucose', 'temperature', 'weight', 'heart_rate', 'oxygen', 'other')),
+      value_numeric REAL NOT NULL,
+      value_secondary REAL,
+      unit TEXT NOT NULL,
+      notes TEXT,
+      recorded_at TEXT NOT NULL
+    );
+    INSERT INTO vitals_new SELECT * FROM vitals;
+    DROP TABLE vitals;
+    ALTER TABLE vitals_new RENAME TO vitals;
+    CREATE INDEX IF NOT EXISTS idx_vitals_profile ON vitals(profile_id);
+    CREATE INDEX IF NOT EXISTS idx_vitals_profile_type ON vitals(profile_id, type);
+  `);
 }
 
 /**
