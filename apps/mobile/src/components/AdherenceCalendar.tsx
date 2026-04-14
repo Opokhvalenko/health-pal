@@ -80,20 +80,40 @@ export function AdherenceCalendar({ days, weeks }: AdherenceCalendarProps): Reac
           ))}
         </View>
 
-        {/* Skia canvas grid */}
-        <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
-          {cells.map((cell) => (
-            <RoundedRect
-              key={`${cell.x}-${cell.y}`}
-              x={cell.x}
-              y={cell.y}
-              width={CELL_SIZE}
-              height={CELL_SIZE}
-              r={CELL_RADIUS}
-              color={cell.color}
-            />
-          ))}
-        </Canvas>
+        <View>
+          {/* Skia canvas grid */}
+          <Canvas style={{ width: canvasWidth, height: canvasHeight }}>
+            {cells.map((cell) => (
+              <RoundedRect
+                key={`${cell.x}-${cell.y}`}
+                x={cell.x}
+                y={cell.y}
+                width={CELL_SIZE}
+                height={CELL_SIZE}
+                r={CELL_RADIUS}
+                color={cell.color}
+              />
+            ))}
+          </Canvas>
+
+          {/* Week labels: oldest → current */}
+          <View style={[calendarStyles.weekLabels, { width: canvasWidth }]}>
+            {Array.from({ length: weeks }, (_, i) => {
+              const weeksAgo = weeks - 1 - i;
+              const label =
+                weeksAgo === 0 ? t('adherence.thisWeek') : t('adherence.weeksAgo', { n: weeksAgo });
+              return (
+                <Text
+                  key={`week-${weeksAgo}`}
+                  style={[calendarStyles.weekLabel, { width: CELL_SIZE + CELL_GAP }]}
+                  numberOfLines={1}
+                >
+                  {label}
+                </Text>
+              );
+            })}
+          </View>
+        </View>
       </View>
 
       {/* Legend */}
@@ -136,6 +156,15 @@ const calendarStyles = StyleSheet.create((theme) => ({
     textAlignVertical: 'center',
     lineHeight: CELL_SIZE + CELL_GAP,
     fontWeight: theme.fontWeight.medium,
+  },
+  weekLabels: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  weekLabel: {
+    fontSize: 9,
+    color: theme.colors.textMuted,
+    textAlign: 'center',
   },
   legend: {
     flexDirection: 'row',

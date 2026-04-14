@@ -21,6 +21,9 @@ export function BigButtonView(): React.JSX.Element {
   );
 
   const nextPending = doses.find((d) => d.status === 'pending');
+  const takenCount = doses.filter((d) => d.status === 'taken').length;
+  const missedCount = doses.filter((d) => d.status === 'missed').length;
+  const totalToday = doses.length;
 
   const handleTake = async (): Promise<void> => {
     if (!nextPending || !activeProfile) return;
@@ -57,6 +60,19 @@ export function BigButtonView(): React.JSX.Element {
               {nextPending.dosageValue} {t(`medications.units.${nextPending.dosageUnit}`)} —{' '}
               {nextPending.timeStr}
             </Text>
+          </>
+        ) : totalToday > 0 ? (
+          <>
+            <Ionicons name="checkmark-circle-outline" size={64} color="#4A9B8E" />
+            <Text style={styles.nothingText}>{t('bigButton.allDoneToday')}</Text>
+            <Text style={styles.summaryText}>
+              {t('bigButton.summary', { taken: takenCount, total: totalToday })}
+            </Text>
+            {missedCount > 0 && (
+              <Text style={styles.summaryMissed}>
+                {t('bigButton.missedCount', { count: missedCount })}
+              </Text>
+            )}
           </>
         ) : (
           <>
@@ -131,5 +147,15 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSize.xl,
     color: theme.colors.textMuted,
     fontWeight: theme.fontWeight.medium,
+  },
+  summaryText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textMuted,
+    marginTop: theme.spacing.md,
+  },
+  summaryMissed: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.error,
+    marginTop: theme.spacing.xs,
   },
 }));

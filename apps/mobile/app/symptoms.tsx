@@ -32,6 +32,8 @@ const SEVERITY_COLORS = [
   '#B04040',
 ];
 
+const COMMON_SYMPTOMS = ['headache', 'nausea', 'fatigue', 'pain', 'fever', 'dizziness'] as const;
+
 export default function SymptomsScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
@@ -68,6 +70,18 @@ export default function SymptomsScreen(): React.JSX.Element {
       setSeverity(5);
       setNote('');
       setShowForm(false);
+      await loadSymptoms();
+    }, t('common.error'));
+  };
+
+  const handleQuickLog = async (symptomKey: string): Promise<void> => {
+    if (!activeProfile) return;
+    await safeAsync(async () => {
+      await symptomService.create({
+        profileId: activeProfile.id,
+        name: t(`symptoms.common.${symptomKey}`),
+        severity: 5,
+      });
       await loadSymptoms();
     }, t('common.error'));
   };
@@ -167,9 +181,25 @@ export default function SymptomsScreen(): React.JSX.Element {
               </View>
             </View>
           ) : (
-            <Pressable style={styles.addButton} onPress={() => setShowForm(true)}>
-              <Text style={styles.addButtonText}>+ {t('symptoms.logSymptom')}</Text>
-            </Pressable>
+            <>
+              <Text style={styles.quickLogTitle}>{t('symptoms.quickLog')}</Text>
+              <View style={styles.quickLogRow}>
+                {COMMON_SYMPTOMS.map((key) => (
+                  <Pressable
+                    key={key}
+                    style={styles.quickLogChip}
+                    onPress={() => void handleQuickLog(key)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t(`symptoms.common.${key}`)}
+                  >
+                    <Text style={styles.quickLogChipText}>{t(`symptoms.common.${key}`)}</Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Pressable style={styles.addButton} onPress={() => setShowForm(true)}>
+                <Text style={styles.addButtonText}>+ {t('symptoms.logSymptom')}</Text>
+              </Pressable>
+            </>
           )}
 
           {symptoms.length > 0 && (
@@ -317,6 +347,33 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: theme.fontSize.md,
     color: theme.colors.textOnPrimary,
     fontWeight: theme.fontWeight.bold,
+  },
+  quickLogTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: theme.spacing.sm,
+  },
+  quickLogRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.lg,
+  },
+  quickLogChip: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  quickLogChipText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.semibold,
   },
   addButton: {
     backgroundColor: theme.colors.surface,

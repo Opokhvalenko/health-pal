@@ -75,7 +75,13 @@ export default function VitalsScreen(): React.JSX.Element {
               const list = vitalsByType.get(type) ?? [];
               const latest = list[0];
               return (
-                <View key={type} style={styles.section}>
+                <Pressable
+                  key={type}
+                  style={styles.section}
+                  onPress={() => router.push({ pathname: '/vital-form', params: { type } })}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${t('vitals.add')} — ${t(`vitals.types.${type}`)}`}
+                >
                   <View style={styles.sectionHeader}>
                     <Text style={styles.sectionTitle}>{t(`vitals.types.${type}`)}</Text>
                     {latest && <Text style={styles.sectionLatest}>{formatVitalValue(latest)}</Text>}
@@ -102,7 +108,7 @@ export default function VitalsScreen(): React.JSX.Element {
                       </View>
                     ))
                   )}
-                </View>
+                </Pressable>
               );
             })}
           </>
