@@ -4,6 +4,18 @@
 
 A local-first medication companion built with React Native and Expo. HealthPal helps patients and caregivers manage medications, track adherence, log symptoms, monitor vitals, and prepare for doctor visits — all without requiring an account or internet connection.
 
+## Try it on Android
+
+Scan the QR code or download the latest APK directly:
+
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://github.com/Opokhvalenko/health-pal/releases/latest/download/application-2f2c1658-4551-437d-98c1-a88ca8d93104.apk" width="220" alt="QR code — install HealthPal on Android" />
+</p>
+
+[**Download APK (v1.0.0)**](https://github.com/Opokhvalenko/health-pal/releases/latest) · [All releases](https://github.com/Opokhvalenko/health-pal/releases)
+
+> Allow installation from unknown sources when Android prompts. No account required, app starts working in 30 seconds.
+
 ## Screenshots
 
 <p align="center">
