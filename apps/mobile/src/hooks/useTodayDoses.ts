@@ -1,4 +1,5 @@
 import { computeNextOccurrences } from '@health-pal/schedule-engine';
+import * as Sentry from '@sentry/react-native';
 import { useCallback, useEffect, useState } from 'react';
 import type { DoseEventRow, MedicationWithSchedule } from '../db';
 import { doseEventService, medicationService } from '../db';
@@ -34,38 +35,43 @@ export function useTodayDoses(profileId: string | undefined): UseTodayDosesResul
       return;
     }
 
-    const [meds, events] = await Promise.all([
-      medicationService.getAllForProfile(profileId),
-      doseEventService.getForProfileToday(profileId),
-    ]);
+    try {
+      const [meds, events] = await Promise.all([
+        medicationService.getAllForProfile(profileId),
+        doseEventService.getForProfileToday(profileId),
+      ]);
 
-    const todayDoses = buildTodayDoses(meds, events);
+      const todayDoses = buildTodayDoses(meds, events);
 
-    // Auto-mark missed: pending doses past grace period
-    const now = Date.now();
-    let changed = false;
-    for (const dose of todayDoses) {
-      if (dose.status === 'pending' && dose.scheduledAt.getTime() + AUTO_MISS_GRACE_MS < now) {
-        await doseEventService.logDose({
-          scheduleId: dose.scheduleId,
-          profileId,
-          scheduledAt: dose.scheduledAt.toISOString(),
-          status: 'missed',
-        });
-        changed = true;
+      // Auto-mark missed: pending doses past grace period
+      const now = Date.now();
+      let changed = false;
+      for (const dose of todayDoses) {
+        if (dose.status === 'pending' && dose.scheduledAt.getTime() + AUTO_MISS_GRACE_MS < now) {
+          await doseEventService.logDose({
+            scheduleId: dose.scheduleId,
+            profileId,
+            scheduledAt: dose.scheduledAt.toISOString(),
+            status: 'missed',
+          });
+          changed = true;
+        }
       }
-    }
 
-    // Re-fetch if we auto-missed anything
-    if (changed) {
-      const updatedEvents = await doseEventService.getForProfileToday(profileId);
-      const updatedDoses = buildTodayDoses(meds, updatedEvents);
-      setDoses(updatedDoses);
-    } else {
-      setDoses(todayDoses);
+      // Re-fetch if we auto-missed anything
+      if (changed) {
+        const updatedEvents = await doseEventService.getForProfileToday(profileId);
+        const updatedDoses = buildTodayDoses(meds, updatedEvents);
+        setDoses(updatedDoses);
+      } else {
+        setDoses(todayDoses);
+      }
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      setDoses([]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [profileId]);
 
   useEffect(() => {

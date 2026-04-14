@@ -83,7 +83,7 @@ export default function TreatmentCoursesScreen(): React.JSX.Element {
       </ScrollView>
 
       <Pressable
-        style={styles.fab}
+        style={[styles.fab, { bottom: insets.bottom + 24 }]}
         onPress={() => router.push('/treatment-course-form')}
         accessibilityRole="button"
         accessibilityLabel={t('treatmentCourses.add')}
@@ -224,7 +224,6 @@ const styles = StyleSheet.create((theme) => ({
   fab: {
     position: 'absolute',
     right: theme.spacing.lg,
-    bottom: theme.spacing.lg,
     width: 56,
     height: 56,
     borderRadius: 28,

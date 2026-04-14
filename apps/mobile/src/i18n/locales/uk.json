@@ -224,7 +224,7 @@
     "empty": "Візитів ще немає",
     "emptyHint": "Записуйте візити до лікаря щоб тримати рекомендації та призначення в одному місці",
     "doctorName": "Ім'я лікаря",
-    "doctorNamePlaceholder": "напр. Доктор Іванова",
+    "doctorNamePlaceholder": "напр. Іваненко О.П.",
     "specialty": "Спеціалізація",
     "specialtyPlaceholder": "напр. Кардіолог",
     "visitDate": "Дата візиту",
@@ -315,7 +315,7 @@
     "switchedTo": "Перемкнуто на {{name}}",
     "roles": {
       "self": "Я",
-      "caregiver": "Опікун",
+      "caregiver": "Інший опікун",
       "patient": "Пацієнт"
     },
     "active": "Активний",

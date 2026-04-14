@@ -260,12 +260,12 @@ function DoseCard({
     <View
       style={[styles.doseCard, isDue && !calmMode && styles.doseCardDue]}
       accessible
-      accessibilityLabel={`${dose.medicationName}, ${dose.dosageValue} ${dose.dosageUnit}, ${isDue ? t('dose.dueNow') : dose.timeStr}`}
+      accessibilityLabel={`${dose.medicationName}, ${dose.dosageValue} ${t(`medications.units.${dose.dosageUnit}`)}, ${isDue ? t('dose.dueNow') : dose.timeStr}`}
     >
       <View style={styles.doseInfo}>
         <Text style={styles.doseName}>{dose.medicationName}</Text>
         <Text style={styles.doseDosage}>
-          {dose.dosageValue} {dose.dosageUnit}
+          {dose.dosageValue} {t(`medications.units.${dose.dosageUnit}`)}
         </Text>
         <Text style={[styles.doseTime, isDue && !calmMode && styles.doseTimeDue]}>
           {isDue ? t('dose.dueNow') : t('dose.scheduled', { time: dose.timeStr })}

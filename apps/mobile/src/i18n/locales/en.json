@@ -314,8 +314,8 @@
     "emoji": "Avatar",
     "switchedTo": "Switched to {{name}}",
     "roles": {
-      "self": "Self",
-      "caregiver": "Caregiver",
+      "self": "Me",
+      "caregiver": "Co-caregiver",
       "patient": "Patient"
     },
     "active": "Active",

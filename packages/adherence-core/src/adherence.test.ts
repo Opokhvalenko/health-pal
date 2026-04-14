@@ -177,12 +177,13 @@ describe('computeCalendarData', () => {
     expect(result.weeks).toBe(2);
   });
 
-  it('marks days without events as none', () => {
+  it('marks days without events as none (past) or future', () => {
+    const todayKey = '2026-04-10';
     const result = computeCalendarData([], 1, now);
     for (const day of result.days) {
-      expect(day.status).toBe('none');
       expect(day.taken).toBe(0);
       expect(day.total).toBe(0);
+      expect(day.status).toBe(day.date > todayKey ? 'future' : 'none');
     }
   });
 
@@ -220,9 +221,17 @@ describe('computeCalendarData', () => {
     expect(apr9?.status).toBe('missed');
   });
 
-  it('today is the last day in the grid', () => {
+  it('grid ends on Sunday of the week containing today', () => {
+    // 2026-04-10 is Friday; Sunday of that week is 2026-04-12.
     const result = computeCalendarData([], 1, now);
     const lastDay = result.days[result.days.length - 1];
-    expect(lastDay?.date).toBe('2026-04-10');
+    expect(lastDay?.date).toBe('2026-04-12');
+  });
+
+  it('aligns days so index 0 is Monday and index 6 is Sunday of the first week', () => {
+    // For now=2026-04-10 (Fri), 1 week → Mon 2026-04-06 .. Sun 2026-04-12
+    const result = computeCalendarData([], 1, now);
+    expect(result.days[0]?.date).toBe('2026-04-06'); // Monday
+    expect(result.days[6]?.date).toBe('2026-04-12'); // Sunday
   });
 });

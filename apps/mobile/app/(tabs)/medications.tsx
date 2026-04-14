@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInRight, LinearTransition } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native-unistyles';
 import { MedicationsSkeleton } from '../../src/components/skeletons/MedicationsSkeleton';
 import type { MedicationWithSchedule, TreatmentCourseRow } from '../../src/db';
@@ -18,6 +18,7 @@ export default function MedicationsScreen(): React.JSX.Element {
   const [meds, setMeds] = useState<MedicationWithSchedule[]>([]);
   const [courses, setCourses] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
+  const insets = useSafeAreaInsets();
 
   const loadMeds = useCallback(async (): Promise<void> => {
     if (!activeProfile) return;
@@ -55,7 +56,7 @@ export default function MedicationsScreen(): React.JSX.Element {
           <Text style={styles.emptyHint}>{t('medications.emptyHint')}</Text>
         </View>
         <Pressable
-          style={styles.fab}
+          style={[styles.fab, { bottom: insets.bottom + 24 }]}
           onPress={() => router.push('/medication-form')}
           accessibilityRole="button"
           accessibilityLabel={t('medications.addMedication')}
@@ -112,7 +113,10 @@ export default function MedicationsScreen(): React.JSX.Element {
         )}
       </ScrollView>
 
-      <Pressable style={styles.fab} onPress={() => router.push('/medication-form')}>
+      <Pressable
+        style={[styles.fab, { bottom: insets.bottom + 24 }]}
+        onPress={() => router.push('/medication-form')}
+      >
         <Text style={styles.fabText}>+</Text>
       </Pressable>
     </SafeAreaView>
@@ -296,7 +300,6 @@ const styles = StyleSheet.create((theme) => ({
   fab: {
     position: 'absolute',
     right: theme.spacing.lg,
-    bottom: theme.spacing.lg,
     width: 56,
     height: 56,
     borderRadius: 28,
