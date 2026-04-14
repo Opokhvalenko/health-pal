@@ -131,7 +131,9 @@
     "summary": "Summary",
     "calendar": "Activity",
     "partial": "Partial",
-    "noData": "No data"
+    "noData": "No data",
+    "thisWeek": "Now",
+    "weeksAgo": "−{{n}}w"
   },
   "dose": {
     "take": "Take",
@@ -334,7 +336,10 @@
     "takeNow": "Take",
     "done": "Done!",
     "nothingNow": "Nothing right now",
-    "nextAt": "Next at {{time}}"
+    "nextAt": "Next at {{time}}",
+    "allDoneToday": "All done today",
+    "summary": "{{taken}} of {{total}} doses taken",
+    "missedCount": "Missed: {{count}}"
   },
   "symptoms": {
     "title": "Symptoms",
@@ -350,6 +355,15 @@
     "emptyHint": "Tap + to log a symptom",
     "delete": "Delete",
     "deleteConfirm": "Delete this symptom log?",
+    "quickLog": "Quick log",
+    "common": {
+      "headache": "Headache",
+      "nausea": "Nausea",
+      "fatigue": "Fatigue",
+      "pain": "Pain",
+      "fever": "Fever",
+      "dizziness": "Dizziness"
+    },
     "severityLabels": {
       "1": "Minimal",
       "2": "Very mild",

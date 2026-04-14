@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -26,11 +26,17 @@ const VITAL_TYPES: VitalType[] = [
   'oxygen',
 ];
 
+function isVitalType(value: string | undefined): value is VitalType {
+  return value !== undefined && (VITAL_TYPES as readonly string[]).includes(value);
+}
+
 export default function VitalFormScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const activeProfile = useAppStore((s) => s.activeProfile);
+  const params = useLocalSearchParams<{ type?: string }>();
+  const initialType: VitalType = isVitalType(params.type) ? params.type : 'blood_pressure';
 
-  const [type, setType] = useState<VitalType>('blood_pressure');
+  const [type, setType] = useState<VitalType>(initialType);
   const [value, setValue] = useState('');
   const [valueSecondary, setValueSecondary] = useState('');
   const [pulse, setPulse] = useState('');

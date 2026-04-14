@@ -131,7 +131,9 @@
     "summary": "Підсумок",
     "calendar": "Активність",
     "partial": "Частково",
-    "noData": "Немає даних"
+    "noData": "Немає даних",
+    "thisWeek": "Цей",
+    "weeksAgo": "−{{n}} тиж"
   },
   "dose": {
     "take": "Прийняти",
@@ -334,7 +336,10 @@
     "takeNow": "Прийняти",
     "done": "Готово!",
     "nothingNow": "Зараз нічого",
-    "nextAt": "Наступний о {{time}}"
+    "nextAt": "Наступний о {{time}}",
+    "allDoneToday": "На сьогодні все",
+    "summary": "Прийнято {{taken}} з {{total}} доз",
+    "missedCount": "Пропущено: {{count}}"
   },
   "symptoms": {
     "title": "Симптоми",
@@ -350,6 +355,15 @@
     "emptyHint": "Натисніть + щоб записати симптом",
     "delete": "Видалити",
     "deleteConfirm": "Видалити цей запис?",
+    "quickLog": "Швидко записати",
+    "common": {
+      "headache": "Головний біль",
+      "nausea": "Нудота",
+      "fatigue": "Втома",
+      "pain": "Біль",
+      "fever": "Підвищена температура",
+      "dizziness": "Запаморочення"
+    },
     "severityLabels": {
       "1": "Мінімальний",
       "2": "Дуже легкий",
